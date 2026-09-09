@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Wallet {
+  address         String        @id
+  createdAt       DateTime      @default(now())
+  referredBy      String?
+  referralCode    String        @unique
+  xHandle         String?
+  flaggedSybil    Boolean       @default(false)
+  /// In-game Hype balance. Never accept client-submitted balances.
+  hypeBalance     Decimal       @default(50) @db.Decimal(20, 6)
+  harvestStreak   Int           @default(0)
+  /// UTC calendar day (YYYY-MM-DD) of last successful harvest.
+  lastHarvestDay  String?
+  lastDailyHypeAt DateTime?
+  seasonPoints    SeasonPoint[]
+  plots           Plot[]
+  stakes          Stake[]
+  hypeLedger      HypeLedger[]
+}
+
+model Season {
+  id           String        @id @default(cuid())
+  number       Int           @unique
+  startsAt     DateTime
+  endsAt       DateTime
+  /// Filled at season close from treasury − ops reserve.
+  poolAmount   Decimal?      @db.Decimal(36, 9)
+  closedAt     DateTime?
+  payoutTxLog  PayoutTx[]
+  seasonPoints SeasonPoint[]
+}
+
+model SeasonPoint {
+  id       String  @id @default(cuid())
+  walletId String
+  wallet   Wallet  @relation(fields: [walletId], references: [address])
+  seasonId String
+  season   Season  @relation(fields: [seasonId], references: [id])
+  points   Decimal @default(0) @db.Decimal(36, 6)
+
+  @@unique([walletId, seasonId])
+  @@index([seasonId, points])
+}
+
+model Plot {
+  id          String    @id @default(cuid())
+  walletId    String
+  wallet      Wallet    @relation(fields: [walletId], references: [address])
+  /// Slot index within the farm (0 .. STARTER_PLOTS-1).
+  index       Int       @default(0)
+  /// null = empty; otherwise "Basic" | "Hybrid" | "Golden"
+  seedTier    String?
+  plantedAt   DateTime?
+  maturesAt   DateTime?
+  harvestedAt DateTime?
+  /// Cached display status; eligibility is always recomputed from timestamps.
+  status      String    @default("empty")
+
+  @@unique([walletId, index])
+  @@index([walletId])
+}
+
+model Stake {
+  id       String   @id @default(cuid())
+  walletId String
+  wallet   Wallet   @relation(fields: [walletId], references: [address])
+  amount   Decimal  @db.Decimal(36, 9)
+  lockDays Int
+  lockedAt DateTime @default(now())
+  unlockAt DateTime
+  txHash   String
+  // TODO: replace with audited on-chain staking program before mainnet.
+
+  @@index([walletId])
+  @@index([txHash])
+}
+
+model PayoutTx {
+  id        String   @id @default(cuid())
+  seasonId  String
+  season    Season   @relation(fields: [seasonId], references: [id])
+  walletId  String
+  amount    Decimal  @db.Decimal(36, 9)
+  txHash    String
+  /// Idempotency key: `${seasonId}:${walletId}` — never double-pay.
+  idemKey   String   @unique
+  dryRun    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([seasonId])
+}
+
+model AuthNonce {
+  id        String   @id @default(cuid())
+  address   String
+  nonce     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([address, used])
+}
+
+model HypeLedger {
+  id        String   @id @default(cuid())
+  walletId  String
+  wallet    Wallet   @relation(fields: [walletId], references: [address])
+  amount    Decimal  @db.Decimal(20, 6)
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([walletId, createdAt])
+}
+
+model TreasuryTx {
+  id        String   @id @default(cuid())
+  /// deposit | payout
+  type      String
+  amount    Decimal  @db.Decimal(36, 9)
+  txHash    String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model GoldenHarvestEvent {
+  id             String   @id @default(cuid())
+  startedAt      DateTime @default(now())
+  endsAt         DateTime
+  priceChangePct Decimal  @db.Decimal(10, 6)
+  active         Boolean  @default(true)
+
+  @@index([active, endsAt])
+}
+
+/// Rolling price samples for Golden Harvest detection (10-minute window).
+model PriceSample {
+  id        String   @id @default(cuid())
+  priceUsd  Decimal  @db.Decimal(24, 12)
+  sampledAt DateTime @default(now())
+
+  @@index([sampledAt])
+}

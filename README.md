@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pump Farm
 
-## Getting Started
+Gamified Robinhood Chain memecoin farm for **$FARM** (`pump.farm`). Players plant Pump Seeds, harvest Season Points, and compete for a weekly Silo payout funded by real trading fees.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router + TypeScript
+- **Robinhood Chain** (EVM L2, chain id `4663`) via wagmi + viem
+- Tailwind CSS + dark AAA-meme theme
+- Prisma + Supabase Postgres
+- Vitest for payout/growth math
+
+## Setup
 
 ```bash
+cp .env.example .env.local
+# Set DATABASE_URL from Supabase → Settings → Database
+npm install
+npm run db:generate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+On **localhost**, use the gold **🛠 Dev play** button to bypass wallet login and jump into `/play`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Chain
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Network | Chain ID | Public RPC |
+|---|---|---|
+| Robinhood Chain | 4663 | `https://rpc.mainnet.chain.robinhood.com` |
+| Testnet | 46630 | `https://rpc.testnet.chain.robinhood.com` |
 
-## Learn More
+Set `NEXT_PUBLIC_RH_NETWORK=testnet` to use testnet.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Local app (webpack) |
+| `npm test` | Unit tests |
+| `npm run payout:dry-run` | Season payout table (no sends) |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Security
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- SP/harvest math is server-side only.
+- Dev bypass is localhost-only.
+- Staking v1 is escrow-tracked — audit before mainnet scale.
