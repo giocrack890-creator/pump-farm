@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
 import { WalletButton } from "@/components/layout/WalletButton";
+import { DevBypassButton } from "@/components/layout/DevBypassButton";
 import { Wallet } from "lucide-react";
 
 export default function PlayPage() {
@@ -106,13 +107,29 @@ export default function PlayPage() {
         <Card className="glow-green w-full space-y-4 p-8">
           <Wallet className="mx-auto h-10 w-10 text-[#3DFF7A]" />
           <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-white">
-            Connect to start farming
+            {loadError && jwt ? "Couldn’t load farm" : "Connect to start farming"}
           </h1>
           <p className="text-sm text-white/55">
-            Your farm is provisioned on first wallet signature — no email, no
-            password. If the API is offline, reconnect once it&apos;s back.
+            {loadError && jwt
+              ? "Session may be stale. Clear it and use Dev play again."
+              : "Connect MetaMask on Robinhood Chain — or use Dev play on localhost (crops mature in 30s in demo mode)."}
           </p>
-          <WalletButton />
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {loadError && jwt ? (
+              <Button
+                variant="gold"
+                onClick={() => {
+                  useWalletStore.getState().clearAuth();
+                  setLoadError(false);
+                }}
+              >
+                Clear session
+              </Button>
+            ) : (
+              <DevBypassButton />
+            )}
+            <WalletButton />
+          </div>
         </Card>
         <OnboardingTutorial />
       </div>

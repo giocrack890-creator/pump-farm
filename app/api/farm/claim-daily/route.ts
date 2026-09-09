@@ -3,10 +3,22 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth, isAuthError } from "@/lib/auth/verify";
 import { utcDayKey } from "@/lib/farm/helpers";
 import { dailyAllowance } from "@/lib/game/hype";
+import { demoClaimDaily, isDemoDbMode } from "@/lib/demo/farmMemory";
 
 export async function POST(request: Request) {
   const auth = await requireAuth(request);
   if (isAuthError(auth)) return auth.error;
+
+  if (isDemoDbMode()) {
+    try {
+      return Response.json(demoClaimDaily());
+    } catch (e) {
+      return Response.json(
+        { error: e instanceof Error ? e.message : "Claim failed" },
+        { status: 429 },
+      );
+    }
+  }
 
   const now = new Date();
   const today = utcDayKey(now);

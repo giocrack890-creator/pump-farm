@@ -14,10 +14,15 @@ import {
 import { streakMultiplier } from "@/lib/game/hype";
 import { weatherFromPriceChange } from "@/lib/game/weather";
 import { fetchTokenPrice } from "@/lib/priceFeed";
+import { demoFarmSnapshot, isDemoDbMode } from "@/lib/demo/farmMemory";
 
 export async function GET(request: Request) {
   const auth = await requireAuth(request);
   if (isAuthError(auth)) return auth.error;
+
+  if (isDemoDbMode()) {
+    return Response.json(demoFarmSnapshot());
+  }
 
   const now = new Date();
   const season = (await findActiveSeason(now)) ?? (await ensureCurrentSeason(now));

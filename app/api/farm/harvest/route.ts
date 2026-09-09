@@ -15,6 +15,7 @@ import {
 import { nextStreak, streakMultiplier } from "@/lib/game/hype";
 import { bestActiveStakeMultiplier } from "@/lib/evm/staking";
 import { GOLDEN_HARVEST_MULTIPLIER } from "@/lib/game/config";
+import { demoHarvest, isDemoDbMode } from "@/lib/demo/farmMemory";
 
 type HarvestBody = { plotId?: string };
 
@@ -31,6 +32,17 @@ export async function POST(request: Request) {
 
   if (!body.plotId) {
     return Response.json({ error: "plotId is required" }, { status: 400 });
+  }
+
+  if (isDemoDbMode()) {
+    try {
+      return Response.json(demoHarvest(body.plotId));
+    } catch (e) {
+      return Response.json(
+        { error: e instanceof Error ? e.message : "Harvest failed" },
+        { status: 409 },
+      );
+    }
   }
 
   const now = new Date();

@@ -4,6 +4,7 @@ import { requireAuth, isAuthError } from "@/lib/auth/verify";
 import { getSeedTier, getPlotStatus, computeMaturesAt } from "@/lib/game/growth";
 import { referralBurst } from "@/lib/game/hype";
 import type { SeedTierId } from "@/lib/game/config";
+import { demoPlant, isDemoDbMode } from "@/lib/demo/farmMemory";
 
 type PlantBody = {
   plotId?: string;
@@ -27,6 +28,17 @@ export async function POST(request: Request) {
       { error: "plotId and seedTier are required" },
       { status: 400 },
     );
+  }
+
+  if (isDemoDbMode()) {
+    try {
+      return Response.json(demoPlant(plotId, seedTier));
+    } catch (e) {
+      return Response.json(
+        { error: e instanceof Error ? e.message : "Plant failed" },
+        { status: 400 },
+      );
+    }
   }
 
   const tier = getSeedTier(seedTier);
