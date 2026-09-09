@@ -5,6 +5,8 @@ import { create } from "zustand";
 export type ClientPlot = {
   id: string;
   index: number;
+  gridX?: number;
+  gridY?: number;
   seedTier: string | null;
   plantedAt: string | null;
   maturesAt: string | null;

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Fredoka, Manrope } from "next/font/google";
+import { Fredoka, Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 import { NavBar } from "@/components/layout/NavBar";
-import { Footer } from "@/components/layout/Footer";
+import { AppShell } from "@/components/layout/AppShell";
 
 const display = Fredoka({
   subsets: ["latin"],
@@ -11,9 +11,10 @@ const display = Fredoka({
   weight: ["400", "500", "600", "700"],
 });
 
-const body = Manrope({
+const body = Outfit({
   subsets: ["latin"],
   variable: "--font-body",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const ticker = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "FARM";
@@ -34,8 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="grain-overlay flex min-h-full flex-col font-[family-name:var(--font-body)] antialiased">
         <Providers>
           <NavBar />
-          <main className="flex-1 pt-24">{children}</main>
-          <Footer />
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

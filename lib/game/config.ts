@@ -20,7 +20,7 @@ export const OPS_RESERVE_PCT = (() => {
   return parsed
 })()
 
-export type SeedTierId = "Basic" | "Hybrid" | "Golden"
+export type SeedTierId = "Basic" | "Hybrid" | "Golden" | "Mythic"
 
 export type SeedTierConfig = {
   id: SeedTierId
@@ -48,6 +48,7 @@ export const SEED_TIERS: Record<SeedTierId, SeedTierConfig> = {
   Basic: tier("Basic", 4, 10, 5),
   Hybrid: tier("Hybrid", 8, 25, 15),
   Golden: tier("Golden", 12, 60, 40),
+  Mythic: tier("Mythic", 18, 140, 90),
 }
 
 /** Hours after maturity before Rug Blight activates. */

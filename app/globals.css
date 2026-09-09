@@ -136,6 +136,33 @@ a {
   animation: float-y 4.5s ease-in-out infinite;
 }
 
+.animate-float-slow {
+  animation: float-y 7s ease-in-out infinite;
+}
+
+@keyframes bounce-soft {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -6px);
+  }
+}
+
+.animate-bounce-soft {
+  animation: bounce-soft 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-slow,
+  .animate-pulse-glow,
+  .animate-bounce-soft {
+    animation: none;
+  }
+}
+
 .wallet-adapter-modal-wrapper {
   z-index: 80 !important;
 }
