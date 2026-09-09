@@ -54,14 +54,11 @@ export function isAuthError(
   return "error" in value;
 }
 
-/** True only for local/dev hosts — never enable in production. */
+/** True for local hosts, or when explicit demo/bypass env is enabled for preview/prod. */
 export function isLocalDevRequest(request: Request): boolean {
-  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEV_BYPASS !== "true") {
-    // Still allow if Host is clearly localhost (local next start)
-    const host = request.headers.get("host") ?? "";
-    return host.startsWith("localhost") || host.startsWith("127.0.0.1");
-  }
-  if (process.env.NODE_ENV !== "production") return true;
   const host = request.headers.get("host") ?? "";
-  return host.startsWith("localhost") || host.startsWith("127.0.0.1");
+  if (host.startsWith("localhost") || host.startsWith("127.0.0.1")) return true;
+  if (process.env.ALLOW_DEV_BYPASS === "true") return true;
+  if (process.env.DEMO_MODE === "true") return true;
+  return false;
 }

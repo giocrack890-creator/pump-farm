@@ -373,12 +373,13 @@ export default function PlayPage() {
   if (!jwt || loadError) {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center px-4 text-center">
-        <Card className="w-full space-y-4 p-8">
-          <h1 className="font-[family-name:var(--font-display)] text-2xl text-white">
+        <Card className="w-full space-y-4 border-[4px] border-[#6b3e1f] bg-[#e8c48a] p-8 shadow-[4px_4px_0_#3a2414]">
+          <h1 className="font-[family-name:var(--font-pixel)] text-lg text-[#4a1e0c]">
             Enter the farm
           </h1>
-          <p className="text-sm text-white/55">
-            Use Dev play on localhost for the isometric demo — crops mature in ~30s.
+          <p className="text-sm text-[#6b3e1f]">
+            Tap Play demo to jump straight into the isometric farm — no wallet needed for the public
+            demo.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {loadError && jwt ? (
@@ -392,12 +393,12 @@ export default function PlayPage() {
                 Clear session
               </Button>
             ) : (
-              <DevBypassButton />
+              <DevBypassButton auto={!jwt && !loadError} />
             )}
             <WalletButton />
           </div>
         </Card>
-        <p className="mt-6 max-w-md text-[10px] leading-relaxed text-white/35">{DISCLAIMER}</p>
+        <p className="mt-6 max-w-md text-[10px] leading-relaxed text-[#4a1e0c]/50">{DISCLAIMER}</p>
       </div>
     );
   }
