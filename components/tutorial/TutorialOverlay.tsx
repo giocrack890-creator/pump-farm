@@ -31,52 +31,75 @@ type Props = {
 
 const COPY: Record<
   TutorialStepId,
-  { title: string; body: string; cta?: string; showInstant?: boolean }
+  { title: string; body: string; cta?: string; showInstant?: boolean; spotlight?: string }
 > = {
   welcome: {
     title: "Welcome to Pump Farm",
-    body: "Plant seeds, grow your farm, earn Season Points — and compete for real $FARM from the Silo.",
+    body: "Plant seeds, grow your farm, earn real $FARM from Season Points and the Silo.",
     cta: "Let's farm",
   },
   "tap-plot": {
     title: "Plant your first seed",
-    body: "Tap an empty soil plot on your farm.",
+    body: "Tap an empty soil plot on your farm (green ring).",
   },
   "pick-seed": {
     title: "Pick a seed",
-    body: "Choose Basic — it's free-tier and unlocks right away.",
+    body: "Choose Basic — free-tier and unlocked right away.",
   },
   growth: {
     title: "Crops grow in real time",
-    body: "Normally you'd wait (or come back later). For this tutorial only, you can instant-grow this crop.",
+    body: "Come back later — or instant-grow this one for the tutorial only.",
     cta: "Continue",
     showInstant: true,
   },
   harvest: {
     title: "Harvest!",
-    body: "Tap the glowing ready crop to harvest. Watch Season Points tick up.",
+    body: "Tap the glowing ready crop. Watch Season Points tick up.",
   },
   xp: {
     title: "Farm Level",
-    body: "Every harvest also grows Farm Level. Leveling unlocks better seeds, bigger land, and a fancier Exchange.",
+    body: "Every harvest grows Farm Level — unlocking better seeds, land, and a fancier Exchange.",
     cta: "Got it",
+    spotlight: "xp",
   },
   silo: {
     title: "The Silo",
-    body: "Rewards hold real $FARM from trading fees. Biggest farms each Season get paid. Check Rewards anytime.",
+    body: "Rewards hold real $FARM from trading fees. Biggest farms each Season get paid.",
     cta: "Nice",
+    spotlight: "silo",
   },
   nav: {
     title: "Your tools",
-    body: "Silo · Shop · Pets · Almanac · Decor · Friends — tap the bottom bar anytime.",
+    body: "Silo · Shop · Hire · Almanac · Decor · Friends — bottom bar anytime.",
     cta: "Finish tutorial",
+    spotlight: "nav",
   },
   done: {
     title: "You're ready",
-    body: "Replay anytime from the Menu. Grow green candles.",
+    body: "Replay anytime from Menu. Grow green candles.",
     cta: "Start farming",
   },
 };
+
+/** Screen-space spotlight holes for HUD chrome steps. */
+function Spotlight({ kind }: { kind?: string }) {
+  if (!kind) return null;
+  const box =
+    kind === "xp"
+      ? "left-3 top-3 h-24 w-[220px] md:left-4"
+      : kind === "silo"
+        ? "right-3 top-36 h-20 w-16 md:right-4"
+        : kind === "nav"
+          ? "inset-x-2 bottom-2 h-16 max-w-xl mx-auto"
+          : "";
+  if (!box) return null;
+  return (
+    <div
+      className={`pointer-events-none absolute z-[61] rounded-sm ring-4 ring-[#3dff7a] ring-offset-2 ring-offset-transparent ${box}`}
+      aria-hidden
+    />
+  );
+}
 
 export function TutorialOverlay({ open, step, onSkip, onNext, onInstantGrow }: Props) {
   const [mounted, setMounted] = useState(false);
@@ -94,6 +117,7 @@ export function TutorialOverlay({ open, step, onSkip, onNext, onInstantGrow }: P
         className="pointer-events-none fixed inset-0 z-[60]"
       >
         <div className="absolute inset-0 bg-black/50" />
+        <Spotlight kind={copy.spotlight} />
         <div className="pointer-events-auto absolute inset-x-4 bottom-28 mx-auto max-w-md md:bottom-32">
           <div className={`p-4 ${hudPanel}`}>
             <div className="mb-2 flex items-start justify-between gap-2">

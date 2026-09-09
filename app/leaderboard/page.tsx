@@ -8,6 +8,7 @@ import {
   type LeaderboardRow,
 } from "@/components/leaderboard/LeaderboardTable";
 import { useWalletStore } from "@/store/useWalletStore";
+import { DISCLAIMER } from "@/components/layout/Footer";
 
 export default function LeaderboardPage() {
   const [scope, setScope] = useState<"season" | "alltime">("season");
@@ -96,6 +97,7 @@ export default function LeaderboardPage() {
           <LeaderboardTable rows={rows} highlightWallet={highlight} />
         </TabsContent>
       </Tabs>
+      <p className="mt-10 max-w-3xl text-[11px] leading-relaxed text-white/40">{DISCLAIMER}</p>
     </div>
   );
 }

@@ -29,5 +29,15 @@ Assets are modeled/rendered offline from a fixed isometric camera, then used as 
 ## Script / render version
 N/A for Path A (pack consumed as shipped). If migrating to Path B (Blender batch), log script version + camera/lighting hash here.
 
+## Checklist mapping (v8)
+- [x] Path A Kenney pre-rendered iso sprites
+- [x] Iso placement + depth-sort + missing-texture guard
+- [x] Tutorial once/wallet + skip + replay
+- [x] Barn visuals L1/5/10/15/20
+- [x] Expand reveal animation
+- [x] Level Up celebration + next milestone XP label
+- [x] Decor placements accumulate on farm
+- [x] Disclaimers on play/rewards/docs/leaderboard/proof
+
 ## License note (Kenney CC0)
 > Creative Commons CC0 — you can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.

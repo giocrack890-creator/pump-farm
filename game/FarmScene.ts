@@ -29,6 +29,7 @@ export type FarmSceneConfig = {
   tutorialInstantReadyPlotId?: string | null;
   /** When remounting after land expand, play dust/pan once. */
   expandPulse?: number;
+  decor?: { id: string; itemId: string; gridX: number; gridY: number }[];
 };
 
 const REQUIRED = [
@@ -49,6 +50,7 @@ const REQUIRED = [
   "prop_hay",
   "prop_crate",
   "prop_sign",
+  "prop_tree",
   "prop_pet",
   "prop_sparkle",
 ] as const;
@@ -90,6 +92,8 @@ export class FarmScene extends Phaser.Scene {
   private bootBlocked = false;
   private barnSprite?: Phaser.GameObjects.Image;
   private highlightGfx?: Phaser.GameObjects.Graphics;
+  private progressRings = new Map<string, Phaser.GameObjects.Graphics>();
+  private decorSprites = new Map<string, Phaser.GameObjects.Image>();
   private dustEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
 
   constructor() {
@@ -133,6 +137,7 @@ export class FarmScene extends Phaser.Scene {
     this.load.image("prop_hay", `${p}/hay.png`);
     this.load.image("prop_crate", `${p}/crate.png`);
     this.load.image("prop_sign", `${p}/sign.png`);
+    this.load.image("prop_tree", `${b}/tree.png`);
     this.load.image("prop_pet", `${companions}/pet.png`);
     this.load.image("prop_sparkle", `${ui}/sparkle.png`);
 
@@ -161,6 +166,7 @@ export class FarmScene extends Phaser.Scene {
     this.buildWorld();
     this.highlightGfx = this.add.graphics().setDepth(9998);
     this.refreshHighlight();
+    this.syncDecor(this.cfg.decor ?? []);
 
     if (this.cfg.expandPulse) {
       this.time.delayedCall(350, () => this.playExpandReveal());
@@ -334,6 +340,43 @@ export class FarmScene extends Phaser.Scene {
     for (const p of this.cfg.plots) this.refreshCrop(p);
   }
 
+  syncDecor(decor: { id: string; itemId: string; gridX: number; gridY: number }[]) {
+    this.cfg.decor = decor;
+    if (this.bootBlocked) return;
+    const keep = new Set(decor.map((d) => d.id));
+    for (const [id, spr] of this.decorSprites) {
+      if (!keep.has(id)) {
+        spr.destroy();
+        this.decorSprites.delete(id);
+      }
+    }
+    for (const d of decor) {
+      if (this.decorSprites.has(d.id)) continue;
+      const key =
+        d.itemId === "tree"
+          ? "prop_tree"
+          : d.itemId === "fence"
+            ? "prop_fence"
+            : d.itemId === "hay"
+              ? "prop_hay"
+              : d.itemId === "crate"
+                ? "prop_crate"
+                : "prop_sign";
+      if (!this.textures.exists(key)) continue;
+      const targetScale = d.itemId === "tree" ? 0.85 : 0.9;
+      const spr = this.placeSprite(key, d.gridX, d.gridY, 3, targetScale);
+      this.decorSprites.set(d.id, spr);
+      spr.setScale(0);
+      this.tweens.add({
+        targets: spr,
+        scaleX: targetScale,
+        scaleY: targetScale,
+        duration: 280,
+        ease: "Back.easeOut",
+      });
+    }
+  }
+
   private refreshHighlight() {
     if (!this.highlightGfx) return;
     this.highlightGfx.clear();
@@ -392,10 +435,13 @@ export class FarmScene extends Phaser.Scene {
     const container = this.plotSprites.get(plot.id);
     if (!container) return;
     let existing = this.cropSprites.get(plot.id);
+    let ring = this.progressRings.get(plot.id);
 
     if (stage < 0) {
       existing?.destroy();
       this.cropSprites.delete(plot.id);
+      ring?.destroy();
+      this.progressRings.delete(plot.id);
       return;
     }
 
@@ -416,9 +462,26 @@ export class FarmScene extends Phaser.Scene {
       existing.setTexture(key);
     }
 
+    // Growth progress ring (real-time)
+    if (!ring) {
+      ring = this.add.graphics().setDepth(isoDepth(plot.gridX, plot.gridY, 2.5));
+      this.progressRings.set(plot.id, ring);
+    }
+    ring.clear();
+    if (!forceReady && plot.status === "growing" && plot.plantedAt && plot.maturesAt) {
+      const start = new Date(plot.plantedAt).getTime();
+      const end = new Date(plot.maturesAt).getTime();
+      const p = Math.min(1, Math.max(0, (Date.now() - start) / Math.max(1, end - start)));
+      ring.lineStyle(3, 0x3dff7a, 0.85);
+      ring.beginPath();
+      ring.arc(container.x, container.y - 28, 22, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-90 + p * 360), false);
+      ring.strokePath();
+    }
+
     if ((forceReady || plot.status === "ready") && !existing.getData("glow")) {
       existing.setData("glow", true);
       this.tweens.add({ targets: existing, alpha: 0.78, duration: 420, yoyo: true, repeat: -1 });
+      ring.clear();
     }
   }
 }

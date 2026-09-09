@@ -26,6 +26,12 @@ import {
   type FarmerSpeciesId,
   type OwnedFarmer,
 } from "@/lib/game/farmers";
+import {
+  DECOR_ITEMS,
+  DECOR_SLOTS,
+  type DecorItemId,
+  type DecorPlacement,
+} from "@/lib/game/decor";
 
 export const DEMO_ADDRESS = "0x0000000000000000000000000000000000faded1";
 
@@ -67,6 +73,7 @@ type DemoWallet = {
   scoutReadyAt: number;
   pendingScout: FarmerSpeciesId | null;
   farmersLastClaimAt: string | null;
+  decor: DecorPlacement[];
 };
 
 const g = globalThis as unknown as { __pumpFarmDemo?: DemoWallet };
@@ -111,6 +118,7 @@ export function getDemoWallet(): DemoWallet {
       scoutReadyAt: 0,
       pendingScout: null,
       farmersLastClaimAt: new Date().toISOString(),
+      decor: [],
     };
   }
   // migrate older demo sessions
@@ -119,6 +127,7 @@ export function getDemoWallet(): DemoWallet {
   if (w.scoutReadyAt == null) w.scoutReadyAt = 0;
   if (w.pendingScout === undefined) w.pendingScout = null;
   if (!w.farmersLastClaimAt) w.farmersLastClaimAt = new Date().toISOString();
+  if (!w.decor) w.decor = [];
   return w;
 }
 
@@ -169,6 +178,7 @@ export function demoFarmSnapshot() {
         : null,
       activity: activityMultiplier(w.farmers),
     },
+    decor: w.decor,
     goldenHarvest: null,
     weather: "Sunny",
     demo: true,
@@ -397,6 +407,32 @@ export function demoClaimFarmerIdle() {
       .filter((f) => f.deployed)
       .reduce((a, f) => a + farmerHypePerSec(f), 0),
   };
+}
+
+export function demoPlaceDecor(itemId: string) {
+  const w = getDemoWallet();
+  const item = DECOR_ITEMS[itemId as DecorItemId];
+  if (!item) throw new Error("Unknown decor item");
+  const farmLevel = levelFromXp(w.xp);
+  if (farmLevel < item.unlockLevel) {
+    throw new Error(`Requires Farm Level ${item.unlockLevel}`);
+  }
+  if (w.decor.some((d) => d.itemId === item.id)) {
+    throw new Error("Already placed on your farm");
+  }
+  if (w.hypeBalance < item.hypeCost) throw new Error(`Need ${item.hypeCost} Hype`);
+  const used = new Set(w.decor.map((d) => `${d.gridX},${d.gridY}`));
+  const slot = DECOR_SLOTS.find((s) => !used.has(`${s.gridX},${s.gridY}`));
+  if (!slot) throw new Error("No free decor slots — expand land later");
+  w.hypeBalance -= item.hypeCost;
+  const placed: DecorPlacement = {
+    id: `decor-${randomBytes(3).toString("hex")}`,
+    itemId: item.id,
+    gridX: slot.gridX,
+    gridY: slot.gridY,
+  };
+  w.decor.push(placed);
+  return { placement: placed, decor: w.decor, hypeBalance: String(w.hypeBalance) };
 }
 
 void STARTER_PLOTS;

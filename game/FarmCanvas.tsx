@@ -17,6 +17,7 @@ type Props = {
   highlightPlot?: { gridX: number; gridY: number } | null;
   tutorialInstantReadyPlotId?: string | null;
   expandPulse?: number;
+  decor?: { id: string; itemId: string; gridX: number; gridY: number }[];
 };
 
 export function FarmCanvas(props: Props) {
@@ -48,6 +49,7 @@ export function FarmCanvas(props: Props) {
         highlightPlot: propsRef.current.highlightPlot,
         tutorialInstantReadyPlotId: propsRef.current.tutorialInstantReadyPlotId,
         expandPulse: propsRef.current.expandPulse,
+        decor: propsRef.current.decor,
       };
 
       const scene = new Scene();
@@ -100,6 +102,10 @@ export function FarmCanvas(props: Props) {
   useEffect(() => {
     sceneRef.current?.setTutorialInstantReady(props.tutorialInstantReadyPlotId ?? null);
   }, [props.tutorialInstantReadyPlotId]);
+
+  useEffect(() => {
+    sceneRef.current?.syncDecor(props.decor ?? []);
+  }, [props.decor]);
 
   return <div ref={hostRef} className="absolute inset-0 h-dvh w-screen overflow-hidden" />;
 }

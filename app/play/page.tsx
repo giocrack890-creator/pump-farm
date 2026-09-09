@@ -23,6 +23,9 @@ import {
   HireFarmersSheet,
   type FarmersPanelState,
 } from "@/components/sheets/HireFarmersSheet";
+import { DecorSheet } from "@/components/sheets/DecorSheet";
+import type { DecorPlacement } from "@/lib/game/decor";
+import type { DecorItemId } from "@/lib/game/decor";
 import { DevBypassButton } from "@/components/layout/DevBypassButton";
 import { WalletButton } from "@/components/layout/WalletButton";
 import { DISCLAIMER } from "@/components/layout/Footer";
@@ -75,9 +78,10 @@ export default function PlayPage() {
   const [plantPlot, setPlantPlot] = useState<ScenePlot | null>(null);
   const [nav, setNav] = useState("shop");
   const [panel, setPanel] = useState<
-    "almanac" | "companion" | "expand" | "farmers" | null
+    "almanac" | "companion" | "expand" | "farmers" | "decor" | null
   >(null);
   const [farmers, setFarmers] = useState<FarmersPanelState | null>(null);
+  const [decor, setDecor] = useState<DecorPlacement[]>([]);
   const [weather, setWeather] = useState("Sunny");
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [burstId, setBurstId] = useState<string | null>(null);
@@ -173,6 +177,7 @@ export default function PlayPage() {
       if (data.wallet?.xp != null) setXp(Number(data.wallet.xp));
       if (data.wallet?.gridSize) usePlayerStore.getState().setGridSize(data.wallet.gridSize);
       if (data.farmers) setFarmers(data.farmers as FarmersPanelState);
+      if (Array.isArray(data.decor)) setDecor(data.decor as DecorPlacement[]);
       if (data.weather) setWeather(String(data.weather));
       if (data.season) {
         setSeason({
@@ -422,6 +427,7 @@ export default function PlayPage() {
           highlightPlot={highlightPlot}
           tutorialInstantReadyPlotId={instantReadyId}
           expandPulse={expandPulse}
+          decor={decor}
         />
       )}
       <StardewTopHud
@@ -460,10 +466,9 @@ export default function PlayPage() {
           if (id === "silo") router.push("/rewards");
           else if (id === "almanac") setPanel("almanac");
           else if (id === "farmers") setPanel("farmers");
+          else if (id === "decorate") setPanel("decor");
           else if (id === "friends") {
             setSheetMsg("Referrals: copy your farm link with Share.");
-          } else if (id === "decorate") {
-            setSheetMsg("Decor unlocks at Farm Level 20. Pets: open Hire for farmers.");
           } else if (id === "shop") {
             setSheetMsg("Shop: tap empty plots to plant seeds. Hire tab = farmers.");
           }
@@ -519,6 +524,32 @@ export default function PlayPage() {
         onBench={(id) => void farmerAction("bench", id)}
         onPromote={(id) => void farmerAction("promote", id)}
         onClaimIdle={() => void farmerAction("claim-idle")}
+      />
+      <DecorSheet
+        open={panel === "decor"}
+        level={level}
+        hype={hype}
+        placements={decor}
+        onClose={() => setPanel(null)}
+        onPlace={(itemId: DecorItemId) => {
+          void (async () => {
+            if (!jwt) return;
+            const res = await fetch("/api/farm/decor", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${jwt}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ itemId }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              alert(data.error ?? "Decor failed");
+              return;
+            }
+            await refresh();
+          })();
+        }}
       />
 
       {levelUp != null && (

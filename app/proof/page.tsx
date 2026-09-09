@@ -22,6 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TREASURY_WALLET, TOKEN_TICKER, OPS_RESERVE_PCT } from "@/lib/game/config";
+import { DISCLAIMER } from "@/components/layout/Footer";
 
 const FALLBACK_SERIES = [
   { day: "Mon", pool: 12.4 },
@@ -149,6 +150,7 @@ export default function ProofPage() {
         Transaction log
       </h2>
       <TreasuryLog txs={txs} />
+      <p className="mt-10 max-w-3xl text-[11px] leading-relaxed text-white/40">{DISCLAIMER}</p>
     </div>
   );
 }
