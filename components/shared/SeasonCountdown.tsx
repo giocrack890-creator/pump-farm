@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { hudInkLight } from "@/components/hud/hudChrome";
 
 type Props = {
   endsAt: string | null;
   className?: string;
   label?: string;
+  variant?: "default" | "hud";
 };
 
 function formatRemaining(ms: number): string {
@@ -26,6 +28,7 @@ export function SeasonCountdown({
   endsAt,
   className,
   label = "Season ends",
+  variant = "default",
 }: Props) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -36,11 +39,20 @@ export function SeasonCountdown({
 
   const remaining = endsAt ? new Date(endsAt).getTime() - now : 0;
 
+  if (variant === "hud") {
+    return (
+      <div className={cn("flex flex-col", className)}>
+        <span className="text-[10px] uppercase tracking-wider text-[#ffe08a]/70">{label}</span>
+        <span className={`mt-0.5 text-sm tabular-nums ${hudInkLight}`}>
+          {endsAt ? formatRemaining(remaining) : "—"}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-col", className)}>
-      <span className="text-[11px] uppercase tracking-wider text-muted">
-        {label}
-      </span>
+      <span className="text-[11px] uppercase tracking-wider text-muted">{label}</span>
       <span className="font-display tabular-nums text-lg text-foreground">
         {endsAt ? formatRemaining(remaining) : "—"}
       </span>

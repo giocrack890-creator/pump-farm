@@ -110,6 +110,7 @@ export async function GET(request: Request) {
       referralCode: wallet.referralCode,
       referredBy: wallet.referredBy,
       flaggedSybil: wallet.flaggedSybil,
+      hasCompletedTutorial: wallet.hasCompletedTutorial,
     },
     season: {
       id: season.id,

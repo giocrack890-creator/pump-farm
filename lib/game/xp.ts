@@ -54,3 +54,31 @@ export const XP_REWARDS = {
   dailyQuest: 25,
   levelUpBonus: 0,
 } as const;
+
+/** Human-readable unlock at the next Farm Level (for XP bar tooltip). */
+export function nextUnlockLabel(level: number): string {
+  const upcoming: { at: number; label: string }[] = [
+    { at: LEVEL_GATES.hybridSeeds, label: "Hybrid Seeds + land expansion" },
+    { at: LEVEL_GATES.goldenSeeds, label: "Golden Seeds + Companion" },
+    { at: LEVEL_GATES.barnTier2, label: "Barn Tier 2 (Neon Barn)" },
+    { at: LEVEL_GATES.mythicSeeds, label: "Mythic / Diamond Hands seeds" },
+    { at: LEVEL_GATES.barnTier3, label: "Barn Tier 3 + Decor" },
+    { at: 25, label: "Endgame flex — keep farming" },
+  ];
+  const next = upcoming.find((u) => u.at > level);
+  return next ? `Lv ${next.at}: ${next.label}` : "Max milestones unlocked — keep climbing ranks";
+}
+
+export function unlocksAtLevel(level: number): string[] {
+  const out: string[] = [];
+  if (level === LEVEL_GATES.hybridSeeds) out.push("Hybrid Seeds", "Land expansion");
+  if (level === LEVEL_GATES.goldenSeeds) out.push("Golden Seeds", "Companions");
+  if (level === LEVEL_GATES.barnTier2) out.push("Barn Tier 2 — Neon Barn");
+  if (level === LEVEL_GATES.mythicSeeds) out.push("Mythic Seeds");
+  if (level === LEVEL_GATES.decorate) out.push("Decor tab", "Barn Tier 3 — Ticker Tower");
+  if (level === 5) out.push("Exchange visual upgrade");
+  if (level === 10) out.push("Exchange visual upgrade");
+  if (level === 15) out.push("Exchange visual upgrade");
+  if (level === 20) out.push("Exchange visual upgrade");
+  return out.length ? out : [`Farm Level ${level}`];
+}

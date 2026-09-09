@@ -20,6 +20,7 @@ model Wallet {
   /// UTC calendar day (YYYY-MM-DD) of last successful harvest.
   lastHarvestDay  String?
   lastDailyHypeAt DateTime?
+  hasCompletedTutorial Boolean  @default(false)
   seasonPoints    SeasonPoint[]
   plots           Plot[]
   stakes          Stake[]

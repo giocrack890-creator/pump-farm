@@ -1,13 +1,22 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { SiloMeter } from "@/components/rewards/SiloMeter";
 import { PayoutCurveChart } from "@/components/rewards/PayoutCurveChart";
 import { StakePanel } from "@/components/rewards/StakePanel";
 import { SeasonCountdown } from "@/components/shared/SeasonCountdown";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFarmStore } from "@/store/useFarmStore";
 import { formatNumber } from "@/lib/utils";
+import { DISCLAIMER } from "@/components/layout/Footer";
+import {
+  hudInk,
+  hudInkLight,
+  hudInkMuted,
+  hudPanel,
+  hudPanelDark,
+  hudGold,
+} from "@/components/hud/hudChrome";
 
 export default function RewardsPage() {
   const sp = useFarmStore((s) => s.sp);
@@ -24,42 +33,51 @@ export default function RewardsPage() {
   const projectedShare = Math.max(0, sp) * 0.00015;
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-24">
-      <div className="mb-8 max-w-3xl space-y-3">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold text-[#FFC94D] md:text-4xl">
-          The Silo
-        </h1>
-        <p className="text-base leading-relaxed text-white/60">
-          No hidden wallets, no trust-me-bro tokenomics. Every dollar in the Silo
-          came from real trading fees, and every payout is on-chain. Check for
-          yourself →
-        </p>
-      </div>
+    <div className="min-h-[calc(100dvh-4rem)] bg-[#87b8d8] bg-[radial-gradient(ellipse_at_top,#b8d4e8_0%,#87b8d8_45%,#6a9bb8_100%)]">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 pb-24">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div className={`max-w-2xl p-4 ${hudPanel}`}>
+            <p className={`text-[11px] ${hudInk}`}>The Silo</p>
+            <p className={`mt-2 text-sm leading-relaxed ${hudInkMuted}`}>
+              No hidden wallets, no trust-me-bro tokenomics. Every dollar in the Silo came from
+              real trading fees, and every payout is on-chain.
+            </p>
+          </div>
+          <Link
+            href="/play"
+            className={`border-[3px] border-[#3a2414] bg-[#ffe08a] px-4 py-2 text-[10px] font-bold text-[#1a1008] shadow-[3px_3px_0_#1a1008] ${hudInk}`}
+          >
+            ← Back to farm
+          </Link>
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="space-y-6">
-          <SiloMeter poolAmount={pool} fillPct={fillPct || 68} />
-          <Card>
-            <CardHeader>
-              <CardTitle>Your projected share</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="font-[family-name:var(--font-display)] text-3xl tabular-nums text-[#FFC94D]">
-                ~{formatNumber(projectedShare, 4)} ETH
+        <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="space-y-5">
+            <SiloMeter poolAmount={pool} fillPct={fillPct || 68} />
+            <div className={`p-4 ${hudPanelDark}`}>
+              <p className={`text-[10px] ${hudInkLight}`}>Your projected share</p>
+              <p className={`mt-2 text-2xl tabular-nums ${hudInkLight}`}>
+                ~{formatNumber(projectedShare, 4)}{" "}
+                <span className="text-sm text-[#ffe08a]/80">ETH</span>
               </p>
-              <p className="text-sm text-white/50">
-                Based on current SP ({formatNumber(sp)}) vs live leaderboard
-                density. Projection updates as the season progresses — not a
-                guarantee.
+              <p className="mt-2 text-xs leading-relaxed text-[#fff8e8]/65">
+                Based on current SP ({formatNumber(sp)}) vs live leaderboard density. Projection
+                updates as the season progresses — not a guarantee.
               </p>
-              <SeasonCountdown endsAt={endsAt} label="Next payout" />
-            </CardContent>
-          </Card>
+              <div className="mt-3">
+                <SeasonCountdown endsAt={endsAt} label="Next payout" variant="hud" />
+              </div>
+            </div>
+          </div>
+          <div className="space-y-5">
+            <PayoutCurveChart />
+            <StakePanel />
+          </div>
         </div>
-        <div className="space-y-6">
-          <PayoutCurveChart />
-          <StakePanel />
-        </div>
+
+        <p className={`mx-auto mt-10 max-w-3xl text-center text-[10px] leading-relaxed ${hudGold}`}>
+          {DISCLAIMER}
+        </p>
       </div>
     </div>
   );

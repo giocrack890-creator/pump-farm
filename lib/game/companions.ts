@@ -20,7 +20,7 @@ export const COMPANIONS: Record<CompanionId, CompanionDef> = {
   hype_hound: {
     id: "hype_hound",
     name: "Hype Hound",
-    sprite: "/assets/sprites/companions/hype_hound.png",
+    sprite: "/assets/sprites/companions/pet.png",
     unlockLevel: LEVEL_GATES.companion,
     hypeRegenBonus: 0.12,
     goldenOddsBonus: 0,
@@ -30,7 +30,7 @@ export const COMPANIONS: Record<CompanionId, CompanionDef> = {
   lucky_catcoin: {
     id: "lucky_catcoin",
     name: "Lucky Cat-coin",
-    sprite: "/assets/sprites/companions/hype_hound.png", // TODO_REPLACE_ASSET: distinct cat sprite
+    sprite: "/assets/sprites/companions/pet.png", // TODO_REPLACE_ASSET: distinct cat sprite
     unlockLevel: LEVEL_GATES.companion,
     hypeRegenBonus: 0,
     goldenOddsBonus: 0.05,
@@ -40,7 +40,7 @@ export const COMPANIONS: Record<CompanionId, CompanionDef> = {
   candle_frog: {
     id: "candle_frog",
     name: "Candle Frog",
-    sprite: "/assets/sprites/companions/hype_hound.png", // TODO_REPLACE_ASSET: frog sprite
+    sprite: "/assets/sprites/companions/pet.png", // TODO_REPLACE_ASSET: frog sprite
     unlockLevel: LEVEL_GATES.companion,
     hypeRegenBonus: 0,
     goldenOddsBonus: 0,

@@ -3,11 +3,16 @@
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useWalletStore } from "@/store/useWalletStore";
 import { TOKEN_TICKER } from "@/lib/game/config";
+import {
+  hudBtnPrimary,
+  hudGold,
+  hudInk,
+  hudInkMuted,
+  hudInput,
+  hudPanel,
+} from "@/components/hud/hudChrome";
 
 export function StakePanel() {
   const { isConnected } = useAccount();
@@ -44,31 +49,32 @@ export function StakePanel() {
   };
 
   return (
-    <Card>
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="font-[family-name:var(--font-display)] text-xl text-white">
-          Stake ${TOKEN_TICKER}
-        </h2>
-        <Badge className="border-[#FFC94D]/30 text-[#FFC94D]">Growth multiplier</Badge>
+    <div className={`p-4 ${hudPanel}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className={`text-[11px] ${hudInk}`}>Stake ${TOKEN_TICKER}</p>
+        <span
+          className={`border-[2px] border-[#8a5a10] bg-[#ffe08a] px-2 py-0.5 text-[9px] font-bold ${hudGold}`}
+        >
+          Growth multiplier
+        </span>
       </div>
-      <p className="mt-2 text-sm text-white/50">
-        {/* TODO: replace with audited on-chain staking program before mainnet. */}
-        Lock ${TOKEN_TICKER} on Robinhood Chain for a growth multiplier. Escrow v1 —
-        paste the tx hash after transferring to the escrow address.
+      <p className={`mt-2 text-sm ${hudInkMuted}`}>
+        Lock ${TOKEN_TICKER} on Robinhood Chain for a growth multiplier. Escrow v1 — paste the tx
+        hash after transferring to the escrow address.
       </p>
-      <p className="mt-2 font-mono text-xs text-white/40">
+      <p className={`mt-2 font-mono text-[10px] ${hudInkMuted}`}>
         Escrow: {stakeInfo.data?.escrowWallet ?? "not configured"}
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <input
-          className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm"
+          className={hudInput}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="Amount"
           aria-label="Stake amount"
         />
         <select
-          className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm"
+          className={hudInput}
           value={lockDays}
           onChange={(e) => setLockDays(Number(e.target.value))}
           aria-label="Lock duration"
@@ -77,17 +83,17 @@ export function StakePanel() {
           <option value={30}>30 days (+25%)</option>
         </select>
         <input
-          className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm"
+          className={hudInput}
           value={txHash}
           onChange={(e) => setTxHash(e.target.value)}
           placeholder="0x… tx hash"
           aria-label="Transaction hash"
         />
       </div>
-      <Button className="mt-4" variant="gold" onClick={() => void onStake()}>
+      <button type="button" className={`mt-4 w-full sm:w-auto ${hudBtnPrimary}`} onClick={() => void onStake()}>
         Record stake
-      </Button>
-      {message ? <p className="mt-2 text-xs text-white/50">{message}</p> : null}
-    </Card>
+      </button>
+      {message ? <p className={`mt-2 text-xs ${hudInkMuted}`}>{message}</p> : null}
+    </div>
   );
 }

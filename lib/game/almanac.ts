@@ -20,13 +20,13 @@ export const ALMANAC_EXTRA: AlmanacEntryDef[] = [
   {
     key: "decor_fence",
     title: "Ticker Fence",
-    art: "/assets/sprites/decor/fence.png",
+    art: "/assets/sprites/props/fence.png",
     flavor: "Keeps the bears out. Mostly.",
   },
   {
     key: "building_barn",
     title: "Neon Exchange Barn",
-    art: "/assets/sprites/buildings/barn-anchor.png",
+    art: "/assets/sprites/buildings/barn.png",
     flavor: "Where candles go to compound.",
   },
 ];

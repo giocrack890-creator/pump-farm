@@ -1,8 +1,16 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import { SEED_DEFS, unlockedSeeds, type SeedTierId } from "@/lib/game/seeds";
 import { formatNumber } from "@/lib/utils";
+import { HudBottomSheet } from "@/components/hud/HudBottomSheet";
+
+/** Stardew parchment cards override for plant picker. */
+const cardOn =
+  "border-[3px] border-[#1a5c30] bg-[#f6e6c4] shadow-[3px_3px_0_#3a2414]";
+const cardLock =
+  "border-[3px] border-[#8b5a2b]/60 bg-[#efe0bc]/70 opacity-75";
+const ink = "font-[family-name:var(--font-pixel)] text-[#4a1e0c]";
+const muted = "text-[#6b3e1f]";
 
 export function PlantPickerSheet({
   open,
@@ -21,79 +29,56 @@ export function PlantPickerSheet({
   const locked = Object.values(SEED_DEFS).filter((s) => level < s.unlockLevel);
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.button
-            type="button"
-            aria-label="Close plant picker"
-            className="fixed inset-0 z-40 bg-black/40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 280, damping: 28 }}
-            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border border-white/10 bg-[#0E1512] p-5 pb-8 shadow-2xl"
-            role="dialog"
-            aria-label="Plant a seed"
-          >
-            <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-white/20" />
-            <h2 className="font-[family-name:var(--font-display)] text-xl text-white">
-              Plant a Pump Seed
-            </h2>
-            <p className="mt-1 text-sm text-white/50">Tap a card — no dropdowns, ever.</p>
-            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-              {seeds.map((s) => {
-                const afford = hype >= s.hypeCost;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    disabled={!afford}
-                    onClick={() => onPlant(s.id)}
-                    className="min-w-[140px] shrink-0 rounded-2xl border border-[#3DFF7A]/25 bg-black/30 p-3 text-left transition hover:border-[#3DFF7A]/60 disabled:opacity-40"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/assets/sprites/crops/${s.spriteKey}_3.png`}
-                      alt={s.label}
-                      className="mx-auto h-20 w-16 object-contain"
-                    />
-                    <p className="mt-2 text-sm font-semibold text-white">{s.label}</p>
-                    <p className="text-[11px] text-white/45">{s.flavor}</p>
-                    <p className="mt-2 text-xs text-[#3DFF7A]">
-                      ⚡ {s.hypeCost} · ◎ {s.baseYieldSp} SP
-                    </p>
-                    <p className="text-[10px] text-white/40">
-                      Grow ~{formatNumber(s.demoGrowMs / 1000, 0)}s (demo)
-                    </p>
-                  </button>
-                );
-              })}
-              {locked.map((s) => (
-                <div
-                  key={s.id}
-                  className="min-w-[140px] shrink-0 rounded-2xl border border-white/10 bg-black/20 p-3 opacity-50"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/assets/sprites/crops/${s.spriteKey}_0.png`}
-                    alt=""
-                    className="mx-auto h-20 w-16 object-contain grayscale"
-                  />
-                  <p className="mt-2 text-sm text-white/70">{s.label}</p>
-                  <p className="text-[11px] text-[#FFC94D]">Unlocks Lvl {s.unlockLevel}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    <HudBottomSheet
+      open={open}
+      onClose={onClose}
+      title="Plant a Pump Seed"
+      subtitle="Tap a card — no dropdowns, ever."
+      ariaLabel="Plant a seed"
+    >
+      <div className="flex gap-3 overflow-x-auto pb-2">
+        {seeds.map((s) => {
+          const afford = hype >= s.hypeCost;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              disabled={!afford}
+              onClick={() => onPlant(s.id)}
+              className={`min-w-[148px] shrink-0 p-3 text-left transition disabled:opacity-40 ${cardOn}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/assets/sprites/crops/${s.spriteKey}_3.png`}
+                alt={s.label}
+                className="mx-auto h-20 w-16 object-contain [image-rendering:pixelated]"
+              />
+              <p className={`mt-2 text-[10px] ${ink}`}>{s.label}</p>
+              <p className={`mt-1 text-[11px] leading-snug ${muted}`}>{s.flavor}</p>
+              <p className="mt-2 text-xs font-bold text-[#1a5c30]">
+                ⚡ {s.hypeCost} · ◎ {s.baseYieldSp} SP
+              </p>
+              <p className={`text-[10px] ${muted}`}>
+                Grow ~{formatNumber(s.demoGrowMs / 1000, 0)}s (demo)
+              </p>
+            </button>
+          );
+        })}
+        {locked.map((s) => (
+          <div key={s.id} className={`min-w-[148px] shrink-0 p-3 ${cardLock}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/assets/sprites/crops/${s.spriteKey}_0.png`}
+              alt=""
+              className="mx-auto h-20 w-16 object-contain grayscale [image-rendering:pixelated]"
+            />
+            <p className={`mt-2 text-[10px] ${ink}`}>{s.label}</p>
+            <p className="mt-1 text-[11px] font-semibold text-[#8a5a10]">
+              Unlocks Lvl {s.unlockLevel}
+            </p>
+          </div>
+        ))}
+      </div>
+    </HudBottomSheet>
   );
 }
