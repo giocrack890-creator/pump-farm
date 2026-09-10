@@ -1,36 +1,51 @@
-import { createPublicClient, http, formatEther, type Address } from "viem";
-import { ACTIVE_CHAIN } from "@/lib/chain/robinhood";
+import { createPublicClient, formatEther, isAddress, type Address, type PublicClient } from "viem";
+import { ACTIVE_CHAIN, chainTransport } from "@/lib/chain/robinhood";
 
 /**
- * SECURITY: Never put private keys in source. Treasury signing keys must live
- * in environment secrets / KMS. A real audit is required before mainnet launch
- * with user funds at scale.
+ * SECURITY: Never put private keys in source. Treasury signing keys live in
+ * environment secrets and are only ever read by `scripts/payout.ts`, which runs
+ * on an operator's machine — never inside a request handler.
  */
-export function getPublicClient() {
-  const rpc =
-    process.env.RPC_URL ??
-    process.env.NEXT_PUBLIC_RPC_URL ??
-    ACTIVE_CHAIN.rpcUrls.default.http[0];
-  return createPublicClient({
+
+let cached: PublicClient | null = null;
+
+/**
+ * One client for the whole server process. viem batches calls made through the
+ * same transport, so sharing it turns the dozen reads a pot snapshot needs into
+ * a couple of round trips.
+ */
+export function getPublicClient(): PublicClient {
+  cached ??= createPublicClient({
     chain: ACTIVE_CHAIN,
-    transport: http(rpc),
-  });
+    transport: chainTransport(),
+  }) as PublicClient;
+  return cached;
+}
+
+export function normalizeEvmAddress(value: unknown): Address | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return isAddress(trimmed) ? (trimmed as Address) : null;
 }
 
 export function getTreasuryAddress(): Address | null {
-  const addr =
+  return normalizeEvmAddress(
     process.env.TREASURY_WALLET_ADDRESS ??
-    process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS;
-  if (!addr || !/^0x[a-fA-F0-9]{40}$/.test(addr)) return null;
-  return addr as Address;
+      process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS,
+  );
+}
+
+export async function getEthBalance(address: Address): Promise<bigint> {
+  return getPublicClient()
+    .getBalance({ address })
+    .catch(() => 0n);
 }
 
 export async function getTreasuryEthBalance(): Promise<number | null> {
   const address = getTreasuryAddress();
   if (!address) return null;
   try {
-    const wei = await getPublicClient().getBalance({ address });
-    return Number(formatEther(wei));
+    return Number(formatEther(await getPublicClient().getBalance({ address })));
   } catch {
     return null;
   }

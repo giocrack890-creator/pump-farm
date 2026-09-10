@@ -43,7 +43,7 @@ export function StakePanel() {
       setMessage((data as { error?: string }).error ?? "Stake failed");
       return;
     }
-    setMessage("Stake recorded (escrow v1 on Robinhood Chain).");
+    setMessage("Stake verified on chain and recorded.");
   };
 
   return (
@@ -57,8 +57,9 @@ export function StakePanel() {
         </span>
       </div>
       <p className={`mt-2 text-sm ${hudInkMuted}`}>
-        Lock ${TOKEN_TICKER} on Robinhood Chain for a growth multiplier. Escrow v1 — paste the tx
-        hash after transferring to the escrow address.
+        Lock ${TOKEN_TICKER} on Robinhood Chain for a growth multiplier. Transfer to the escrow
+        address below, then paste the transaction hash — it is verified on chain before any
+        multiplier is granted.
       </p>
       <p className={`mt-2 font-mono text-[10px] ${hudInkMuted}`}>
         Escrow: {stakeInfo.data?.escrowWallet ?? "not configured"}

@@ -21,18 +21,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TREASURY_WALLET, TOKEN_TICKER, OPS_RESERVE_PCT } from "@/lib/game/config";
+import { TOKEN_TICKER, OPS_RESERVE_PCT } from "@/lib/game/config";
 import { DISCLAIMER } from "@/components/layout/Footer";
 
-const FALLBACK_SERIES = [
-  { day: "Mon", pool: 12.4 },
-  { day: "Tue", pool: 18.1 },
-  { day: "Wed", pool: 22.0 },
-  { day: "Thu", pool: 29.6 },
-  { day: "Fri", pool: 34.2 },
-  { day: "Sat", pool: 39.8 },
-  { day: "Sun", pool: 42.5 },
-];
+/**
+ * There is no illustrative series here on purpose.
+ *
+ * This page's entire claim is that the money is real and checkable. It used to
+ * draw a seven-day curve climbing to 42.5 ETH from a hardcoded array — a
+ * picture of a pot that never existed, on the page asking people to trust the
+ * pot. The chart now comes from recorded readings, and says so when there are
+ * none yet.
+ */
 
 export default function ProofPage() {
   const q = useQuery({
@@ -41,8 +41,7 @@ export default function ProofPage() {
     refetchInterval: 30_000,
   });
 
-  const address =
-    q.data?.address || TREASURY_WALLET || "0x0000000000000000000000000000000000000000";
+  const address: string | null = q.data?.address ?? null;
 
   const txs: TreasuryTx[] = useMemo(() => {
     const raw = (q.data?.transactions ?? []) as Array<{
@@ -63,9 +62,10 @@ export default function ProofPage() {
     }));
   }, [q.data]);
 
-  const series =
-    (q.data?.history as Array<{ day: string; pool: number }> | undefined) ??
-    FALLBACK_SERIES;
+  const series = ((q.data?.history ?? []) as Array<{
+    at: string;
+    potEth: number;
+  }>).map((point) => ({ day: point.at.slice(5), pool: point.potEth }));
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-24">
@@ -79,7 +79,13 @@ export default function ProofPage() {
           {(OPS_RESERVE_PCT * 100).toFixed(0)}%. Verify independently on a block
           explorer.
         </p>
-        <CopyAddress address={address} label="Treasury" />
+        {address ? (
+          <CopyAddress address={address} label="Treasury" />
+        ) : (
+          <p className="text-sm text-white/40">
+            No treasury wallet configured yet.
+          </p>
+        )}
       </div>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2">
@@ -87,10 +93,16 @@ export default function ProofPage() {
           <CardHeader>
             <CardTitle>Pool balance (7d)</CardTitle>
             <CardDescription>
-              Live series when treasury history is available; otherwise illustrative.
+              Recorded readings of the on-chain pot. Nothing is drawn until there
+              are some.
             </CardDescription>
           </CardHeader>
           <CardContent className="h-64">
+            {series.length < 2 ? (
+              <p className="flex h-full items-center justify-center text-center text-sm text-white/40">
+                Not enough history yet — readings are recorded as people play.
+              </p>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={series}>
                 <defs>
@@ -127,6 +139,7 @@ export default function ProofPage() {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 

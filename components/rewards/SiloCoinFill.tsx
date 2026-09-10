@@ -30,9 +30,11 @@ type Props = {
   poolEth: number;
   fillPct: number;
   potUsd: number;
+  /** True while the pot is unknown — the silo shows a dash, not an empty $0. */
+  unknown?: boolean;
 };
 
-export function SiloCoinFill({ poolEth, fillPct, potUsd }: Props) {
+export function SiloCoinFill({ poolEth, fillPct, potUsd, unknown = false }: Props) {
   const clamped = Math.max(0, fillPct);
   const targetIdx = frameIndexForPct(clamped);
   const [displayPct, setDisplayPct] = useState(clamped);
@@ -144,10 +146,12 @@ export function SiloCoinFill({ poolEth, fillPct, potUsd }: Props) {
       <div className="mt-1 text-center">
         <p className="text-[9px] uppercase tracking-wider text-[#5c3a1e]/85">Pot total</p>
         <p className="font-[family-name:var(--font-pixel)] text-2xl font-bold tabular-nums text-[#1a5c30]">
-          ${formatNumber(potUsd, 0)}
+          {unknown ? "—" : `$${formatNumber(potUsd, 0)}`}
         </p>
         <p className="mt-0.5 text-[10px] tabular-nums text-[#5c3a1e]">
-          {formatNumber(poolEth, 4)} ETH · {Math.min(100, displayPct).toFixed(0)}% full
+          {unknown
+            ? "reading the chain…"
+            : `${formatNumber(poolEth, 4)} ETH · ${Math.min(100, displayPct).toFixed(0)}% full`}
         </p>
       </div>
     </div>

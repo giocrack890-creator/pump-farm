@@ -15,6 +15,9 @@ import { streakMultiplier } from "@/lib/game/hype";
 import { weatherFromPriceChange } from "@/lib/game/weather";
 import { fetchTokenPrice } from "@/lib/priceFeed";
 import { demoFarmSnapshot, isDemoDbMode } from "@/lib/demo/farmMemory";
+import { touchWallet } from "@/lib/admin/presence";
+import { recordPriceAndCheckGolden } from "@/lib/game/goldenHarvest";
+import { recordFeeSnapshot } from "@/lib/pot/history";
 
 export async function GET(request: Request) {
   const auth = await requireAuth(request);
@@ -27,6 +30,8 @@ export async function GET(request: Request) {
   const now = new Date();
   const season = (await findActiveSeason(now)) ?? (await ensureCurrentSeason(now));
   await ensureSeasonPoint(auth.address, season.id);
+  // Farm polls are the heartbeat: this is what "farmers online" counts.
+  void touchWallet(auth.address);
 
   const wallet = await prisma.wallet.findUnique({
     where: { address: auth.address },
@@ -62,6 +67,13 @@ export async function GET(request: Request) {
     }
   }
 
+  const price = await fetchTokenPrice();
+  // Player traffic is the sampling: a ten-minute pump cannot be seen by a
+  // once-a-day cron, and this is the request that is already happening.
+  await recordPriceAndCheckGolden(price.priceUsd);
+  // Same reasoning, slower cadence: this is what the proof chart is drawn from.
+  void recordFeeSnapshot();
+
   const golden = await prisma.goldenHarvestEvent.findFirst({
     where: { active: true, endsAt: { gt: now } },
     orderBy: { startedAt: "desc" },
@@ -70,7 +82,6 @@ export async function GET(request: Request) {
   const stakeMult = bestActiveStakeMultiplier(wallet.stakes, now);
   const streakMult = streakMultiplier(wallet.harvestStreak);
   const goldenMult = golden ? GOLDEN_HARVEST_MULTIPLIER : 1;
-  const price = await fetchTokenPrice();
   const weather = weatherFromPriceChange(price.priceChangeM5);
 
   const sp = wallet.seasonPoints[0];

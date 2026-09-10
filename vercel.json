@@ -1,6 +1,6 @@
 {
   "crons": [
-    { "path": "/api/cron/season-close?dryRun=true", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/season-close?dryRun=false", "schedule": "0 0 * * *" },
     { "path": "/api/cron/price-poll", "schedule": "0 1 * * *" }
   ]
 }

@@ -1,7 +1,19 @@
+import { getPotSnapshot } from "@/lib/pot/snapshot";
+
 /**
- * Dexscreener price feed for landing / Golden Harvest.
- * Until $FARM launches we can point DEXSCREENER_* at a live proxy pair
- * (e.g. MEME on Robinhood Chain) to verify the plumbing.
+ * The price of the launch, for the parts of the game that react to it: weather,
+ * Golden Harvest, and the market card.
+ *
+ * This used to be a Dexscreener call pointed at a stand-in token (a MEME pair
+ * hardcoded as a "proxy feed") so the plumbing could be tested before $FARM
+ * existed. That stand-in is gone: the price now comes from the same on-chain
+ * snapshot the pot does, so the number driving Golden Harvest is the number the
+ * pot is denominated in, and there is no way for the two to describe different
+ * coins.
+ *
+ * A fresh Pons launch trades on a bonding curve that no indexer knows about for
+ * a while — the chain answers immediately, which is exactly when the game is
+ * most alive.
  */
 
 export type PriceSnapshot = {
@@ -17,181 +29,73 @@ export type PriceSnapshot = {
   name: string | null;
   pairId: string | null;
   pairUrl?: string;
-  /** True when feed is a stand-in token, not $FARM yet. */
+  /** True until a token is configured — the UI must not quote a price. */
   proxy: boolean;
-  source: "dexscreener" | "mock";
+  source: "chain" | "api" | "none";
   fetchedAt: string;
 };
 
 /** @deprecated Prefer PriceSnapshot */
 export type PriceQuote = PriceSnapshot;
 
-const cache: { at: number; data: PriceSnapshot | null } = { at: 0, data: null };
-const TTL_MS = 15_000;
-const MOCK_PRICE = 0.00042;
-
 /**
- * Temporary live plumbing stand-in: MEME on Robinhood Chain (Dexscreener).
- * Used only when DEXSCREENER_* is unset and $FARM is not live yet.
- * Override anytime via env; set NEXT_PUBLIC_PRICE_PROXY=false when $FARM pair is real.
+ * Short-window price movement, kept in memory so weather can react faster than
+ * the sampling cron. Ten minutes of samples is all the Golden Harvest rule
+ * needs, and it is derived from the same reads the pot already makes.
  */
-const DEFAULT_PROXY_FEED = {
-  chain: "robinhood",
-  pairId: "0x4b7c86491df95f366b31217b2950d2c5136a2f19b6879613eac73d0e69092a1a",
-  tokenAddress: "0x385F4f8ae47651ce5F58F5265395a669f8281e18",
-} as const;
+const WINDOW_MS = 10 * 60_000;
+const samples: { at: number; price: number }[] = [];
 
-type DexPair = {
-  url?: string;
-  priceUsd?: string;
-  marketCap?: number;
-  fdv?: number;
-  liquidity?: { usd?: number };
-  volume?: { h24?: number };
-  priceChange?: { m5?: number; h1?: number; h24?: number };
-  baseToken?: { symbol?: string; name?: string; address?: string };
-  quoteToken?: { symbol?: string };
-  chainId?: string;
-  pairAddress?: string;
-};
-
-function usingExplicitDexEnv(): boolean {
-  return Boolean(
-    process.env.DEXSCREENER_PAIR_ID?.trim() ||
-      process.env.DEXSCREENER_TOKEN_ADDRESS?.trim(),
-  );
+function recordSample(price: number, at: number): void {
+  if (!(price > 0)) return;
+  const last = samples[samples.length - 1];
+  // One sample per 15s is plenty; the pot itself is cached for that long.
+  if (last && at - last.at < 15_000) return;
+  samples.push({ at, price });
+  while (samples.length && at - samples[0]!.at > WINDOW_MS) samples.shift();
 }
 
-function isProxyFeed(): boolean {
-  if (process.env.NEXT_PUBLIC_PRICE_PROXY === "false") return false;
-  if (process.env.NEXT_PUBLIC_PRICE_PROXY === "true") return true;
-  // Built-in MEME stand-in (no explicit DEXSCREENER_* env) = proxy
-  return !usingExplicitDexEnv();
+function changeSince(ms: number, price: number, now: number): number {
+  const cutoff = now - ms;
+  const oldest = samples.find((s) => s.at >= cutoff) ?? samples[0];
+  if (!oldest || !(oldest.price > 0)) return 0;
+  return (price - oldest.price) / oldest.price;
 }
 
-function snapshotFromPair(
-  pair: DexPair | undefined,
-  pairId: string,
-  fetchedAt: string,
-): PriceSnapshot {
+export async function fetchTokenPrice(): Promise<PriceSnapshot> {
+  const pot = await getPotSnapshot();
+  const now = Date.now();
+  const fetchedAt = new Date(now).toISOString();
+
+  const priceUsd = pot.priceUsd ?? 0;
+  recordSample(priceUsd, now);
+
   return {
-    priceUsd: Number(pair?.priceUsd ?? 0),
-    priceChangeM5: Number(pair?.priceChange?.m5 ?? 0) / 100,
-    priceChangeH1: Number(pair?.priceChange?.h1 ?? 0) / 100,
-    priceChange24h: Number(pair?.priceChange?.h24 ?? 0) / 100,
-    volume24h: Number(pair?.volume?.h24 ?? 0),
-    // Literal circulating market cap from Dexscreener — not unit price, not FDV stand-in.
-    marketCap: typeof pair?.marketCap === "number" ? pair.marketCap : null,
-    fdv: typeof pair?.fdv === "number" ? pair.fdv : null,
-    liquidityUsd:
-      typeof pair?.liquidity?.usd === "number" ? pair.liquidity.usd : null,
-    symbol: pair?.baseToken?.symbol ?? null,
-    name: pair?.baseToken?.name ?? null,
-    pairId: pair?.pairAddress ?? pairId,
-    pairUrl: pair?.url,
-    proxy: isProxyFeed(),
-    source: "dexscreener",
+    priceUsd,
+    priceChangeM5: changeSince(5 * 60_000, priceUsd, now),
+    priceChangeH1: changeSince(WINDOW_MS, priceUsd, now),
+    // 24h needs history no in-memory window has; the APIs are the only source.
+    priceChange24h: pot.change24hPct != null ? pot.change24hPct / 100 : 0,
+    volume24h: pot.volume24hUsd ?? 0,
+    marketCap: pot.marketCapUsd,
+    fdv: pot.marketCapUsd,
+    liquidityUsd: null,
+    symbol: pot.symbol,
+    name: pot.symbol,
+    pairId: pot.poolId ?? pot.curve,
+    proxy: !pot.token,
+    source: pot.token ? (pot.priceEth > 0 ? "chain" : "api") : "none",
     fetchedAt,
   };
 }
 
-export async function fetchTokenPrice(): Promise<PriceSnapshot> {
-  const now = Date.now();
-  if (cache.data && now - cache.at < TTL_MS) return cache.data;
-
-  const pairId =
-    process.env.DEXSCREENER_PAIR_ID?.trim() ||
-    (!usingExplicitDexEnv() ? DEFAULT_PROXY_FEED.pairId : null);
-  const tokenAddress =
-    process.env.DEXSCREENER_TOKEN_ADDRESS?.trim() ||
-    (!usingExplicitDexEnv() ? DEFAULT_PROXY_FEED.tokenAddress : null);
-  const fetchedAt = new Date().toISOString();
-
-  if (!pairId && !tokenAddress) {
-    const mock: PriceSnapshot = {
-      priceUsd: MOCK_PRICE,
-      priceChangeM5: 0.02,
-      priceChangeH1: 0.08,
-      priceChange24h: 0.02,
-      volume24h: 125_000,
-      marketCap: null,
-      fdv: null,
-      liquidityUsd: null,
-      symbol: null,
-      name: null,
-      pairId: null,
-      proxy: false,
-      source: "mock",
-      fetchedAt,
-    };
-    cache.data = mock;
-    cache.at = now;
-    return mock;
-  }
-
-  try {
-    const chain =
-      process.env.DEXSCREENER_CHAIN?.trim() ||
-      (!usingExplicitDexEnv() ? DEFAULT_PROXY_FEED.chain : undefined);
-    let url: string;
-    if (pairId && chain) {
-      url = `https://api.dexscreener.com/latest/dex/pairs/${encodeURIComponent(chain)}/${pairId}`;
-    } else if (tokenAddress) {
-      url = `https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`;
-    } else {
-      url = `https://api.dexscreener.com/latest/dex/tokens/${pairId}`;
-    }
-
-    const res = await fetch(url, {
-      next: { revalidate: 15 },
-      headers: { Accept: "application/json" },
-    });
-    if (!res.ok) throw new Error(`Dexscreener HTTP ${res.status}`);
-
-    const data = (await res.json()) as {
-      pair?: DexPair;
-      pairs?: DexPair[];
-    };
-
-    let pair = data.pair;
-    if (!pair && data.pairs?.length) {
-      // Prefer configured chain, then highest liquidity
-      const preferred = chain
-        ? data.pairs.filter((p) => p.chainId === chain)
-        : data.pairs;
-      const pool = preferred.length ? preferred : data.pairs;
-      pair = pool.reduce((best, p) =>
-        Number(p.liquidity?.usd ?? 0) > Number(best.liquidity?.usd ?? 0) ? p : best,
-      );
-    }
-
-    const snapshot = snapshotFromPair(pair, pairId ?? tokenAddress!, fetchedAt);
-    if (!snapshot.priceUsd) throw new Error("Dexscreener returned empty price");
-
-    cache.data = snapshot;
-    cache.at = now;
-    return snapshot;
-  } catch {
-    return (
-      cache.data ?? {
-        priceUsd: 0,
-        priceChangeM5: 0,
-        priceChangeH1: 0,
-        priceChange24h: 0,
-        volume24h: 0,
-        marketCap: null,
-        fdv: null,
-        liquidityUsd: null,
-        symbol: null,
-        name: null,
-        pairId,
-        proxy: isProxyFeed(),
-        source: "mock",
-        fetchedAt,
-      }
-    );
-  }
-}
-
 /** Alias used by older call sites. */
 export const fetchFarmPrice = fetchTokenPrice;
+
+/** Price movement over the rolling window, for the Golden Harvest check. */
+export function rollingPriceChange(windowMs = WINDOW_MS): number {
+  const now = Date.now();
+  const latest = samples[samples.length - 1];
+  if (!latest) return 0;
+  return changeSince(windowMs, latest.price, now);
+}

@@ -53,8 +53,9 @@ model Season {
   number       Int           @unique
   startsAt     DateTime
   endsAt       DateTime
-  /// Filled at season close from treasury − ops reserve.
-  poolAmount   Decimal?      @db.Decimal(36, 9)
+  /// Measured on-chain pot at close, minus nothing — the reserve is applied
+  /// when the split is computed. 18 decimals so ETH is stored to the wei.
+  poolAmount   Decimal?      @db.Decimal(36, 18)
   closedAt     DateTime?
   payoutTxLog  PayoutTx[]
   seasonPoints SeasonPoint[]
@@ -94,15 +95,16 @@ model Stake {
   id       String   @id @default(cuid())
   walletId String
   wallet   Wallet   @relation(fields: [walletId], references: [address])
-  amount   Decimal  @db.Decimal(36, 9)
+  amount   Decimal  @db.Decimal(36, 18)
   lockDays Int
   lockedAt DateTime @default(now())
   unlockAt DateTime
-  txHash   String
+  /// Verified on chain before the row is written. Unique so a double submit
+  /// racing itself cannot record the same transfer twice.
+  txHash   String   @unique
   // TODO: replace with audited on-chain staking program before mainnet.
 
   @@index([walletId])
-  @@index([txHash])
 }
 
 model PayoutTx {
@@ -110,14 +112,23 @@ model PayoutTx {
   seasonId  String
   season    Season   @relation(fields: [seasonId], references: [id])
   walletId  String
-  amount    Decimal  @db.Decimal(36, 9)
-  txHash    String
+  amount    Decimal  @db.Decimal(36, 18)
+  /// Null until a send is confirmed. Never a placeholder — an unpaid row is
+  /// unpaid, and a fake hash here reads as money that already went out.
+  txHash    String?
+  /// pending | paid | void
+  status    String   @default("pending")
+  paidAt    DateTime?
+  note      String?
+  /// USD value of `amount` at the moment the season closed, for the record.
+  amountUsd Decimal? @db.Decimal(20, 6)
   /// Idempotency key: `${seasonId}:${walletId}` — never double-pay.
   idemKey   String   @unique
   dryRun    Boolean  @default(false)
   createdAt DateTime @default(now())
 
   @@index([seasonId])
+  @@index([status])
 }
 
 model AuthNonce {
@@ -146,7 +157,7 @@ model TreasuryTx {
   id        String   @id @default(cuid())
   /// deposit | payout
   type      String
-  amount    Decimal  @db.Decimal(36, 9)
+  amount    Decimal  @db.Decimal(36, 18)
   txHash    String?
   note      String?
   createdAt DateTime @default(now())
@@ -171,4 +182,43 @@ model PriceSample {
   sampledAt DateTime @default(now())
 
   @@index([sampledAt])
+}
+
+/// Runtime configuration an operator can change without a redeploy.
+/// The token address lives here rather than in NEXT_PUBLIC_* because Next
+/// inlines those at build time — repointing the game would need a deploy.
+model AppConfig {
+  key       String   @id
+  value     String
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+}
+
+/// Every admin action, kept so a change to money-adjacent config is traceable.
+model AdminAudit {
+  id        String   @id @default(cuid())
+  actor     String
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// Rolling record of the fee pot, so the season pool is a measured figure
+/// rather than whatever the balance happened to be at the instant of close.
+model FeeSnapshot {
+  id           String   @id @default(cuid())
+  token        String?
+  creator      String?
+  claimableWei String
+  pendingWei   String
+  treasuryWei  String
+  ethUsd       Decimal  @db.Decimal(20, 6)
+  potEth       Decimal  @db.Decimal(36, 18)
+  potUsd       Decimal  @db.Decimal(20, 6)
+  venue        String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
 }

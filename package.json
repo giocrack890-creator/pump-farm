@@ -14,8 +14,12 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "payout:dry-run": "tsx scripts/payout-dry-run.ts",
-    "posters:export": "tsx scripts/export-social-posters.ts"
+    "payout:dry-run": "tsx scripts/payout.mts --dry-run",
+    "posters:export": "tsx scripts/export-social-posters.ts",
+    "payout": "tsx scripts/payout.mts",
+    "payout:list": "tsx scripts/payout.mts --list",
+    "season:preview": "tsx scripts/season-preview.mts",
+    "pons:probe": "tsx scripts/pons-probe.mts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

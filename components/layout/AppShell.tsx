@@ -3,17 +3,18 @@
 import { usePathname } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 
+/** Routes that bring their own header and footer. */
+const OWN_CHROME = ["/play", "/docs", "/admin"];
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const fullBleed =
-    pathname === "/" || pathname.startsWith("/play") || pathname.startsWith("/docs");
+  const ownChrome =
+    pathname === "/" || OWN_CHROME.some((prefix) => pathname.startsWith(prefix));
 
   return (
     <>
-      <main className={fullBleed ? "flex-1" : "flex-1 pt-24"}>{children}</main>
-      {!pathname.startsWith("/play") &&
-        pathname !== "/" &&
-        !pathname.startsWith("/docs") && <Footer />}
+      <main className={ownChrome ? "flex-1" : "flex-1 pt-24"}>{children}</main>
+      {!ownChrome && <Footer />}
     </>
   );
 }

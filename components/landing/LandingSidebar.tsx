@@ -6,19 +6,18 @@ import {
   PAYOUT_TIER_1_SHARE,
   PAYOUT_TIER_2_SHARE,
   PAYOUT_TIER_3_SHARE,
-  TOKEN_TICKER,
-  TOKEN_MINT,
-  isTokenMintLive,
 } from "@/lib/game/config";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import { formatNumber } from "@/lib/utils";
 import { toast } from "@/store/useToastStore";
 import { PixelIcon, type PixelIconId } from "@/components/landing/PixelIcon";
 
 type SeasonCurrent = {
   season: { number: number; endsAt: string | null };
-  siloBalance: number;
+  siloBalance: number | null;
   siloTarget: number;
-  percentFull: number;
+  percentFull: number | null;
+  stale?: boolean;
   payoutSplit: { id: string; label: string; share: number }[];
   live: boolean;
 };
@@ -43,7 +42,8 @@ type PriceApi = {
   symbol: string | null;
   pairUrl?: string;
   proxy: boolean;
-  source: "dexscreener" | "mock";
+  /** 'chain' when read from the curve or pool, 'api' from an indexer. */
+  source: "chain" | "api" | "none";
   fetchedAt: string;
 };
 
@@ -126,7 +126,8 @@ function LiveChart({ series }: { series: number[] }) {
 const RANK_ICONS: PixelIconId[] = ["rank_gold", "rank_silver", "rank_bronze"];
 
 export function LandingSidebar() {
-  const mintLive = isTokenMintLive();
+  const { tokenAddress, tokenLive: mintLive, ticker } = useAppConfig();
+  const contractAddress = tokenAddress ?? "";
   const [spark, setSpark] = useState<number[]>([]);
   const primed = useRef(false);
 
@@ -167,7 +168,7 @@ export function LandingSidebar() {
 
   useEffect(() => {
     const px = priceQ.data?.priceUsd;
-    if (!primed.current || !px || priceQ.data?.source !== "dexscreener") return;
+    if (!primed.current || !px || priceQ.data?.source === "none") return;
     setSpark((prev) => {
       const last = prev[prev.length - 1];
       // Skip near-identical ticks to keep the spark readable
@@ -185,7 +186,10 @@ export function LandingSidebar() {
     { id: "rest", label: "Active rest", share: PAYOUT_TIER_3_SHARE },
   ];
 
-  const live = priceQ.data?.source === "dexscreener" && (priceQ.data.priceUsd ?? 0) > 0;
+  const live =
+    priceQ.data?.source !== undefined &&
+    priceQ.data.source !== "none" &&
+    (priceQ.data.priceUsd ?? 0) > 0;
   const price = live ? priceQ.data!.priceUsd : null;
   const change24 = live ? priceQ.data!.priceChange24h : null;
   // Literal market cap (USD total), never token unit price
@@ -197,7 +201,6 @@ export function LandingSidebar() {
   const feedSymbol = live
     ? (priceQ.data!.symbol ?? statsQ.data?.feedSymbol ?? "TOKEN")
     : null;
-  const isProxy = Boolean(priceQ.data?.proxy ?? statsQ.data?.feedProxy);
   const pairUrl = priceQ.data?.pairUrl ?? statsQ.data?.pairUrl ?? null;
   const farmersOnline = statsQ.data?.activeFarmers;
 
@@ -214,9 +217,9 @@ export function LandingSidebar() {
   }, [spark, price]);
 
   const copyMint = async () => {
-    if (!mintLive) return;
+    if (!mintLive || !contractAddress) return;
     try {
-      await navigator.clipboard.writeText(TOKEN_MINT);
+      await navigator.clipboard.writeText(contractAddress);
       toast.success("Contract address copied");
     } catch {
       toast.error("Couldn't copy address");
@@ -225,12 +228,12 @@ export function LandingSidebar() {
 
   return (
     <aside className="flex flex-col gap-3">
-      {/* Price — live Dexscreener when configured */}
+      {/* Price — read on chain from the configured launch */}
       <div className="pf-card p-4">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-              {live && feedSymbol ? `$${feedSymbol} price` : `$${TOKEN_TICKER} price`}
+              {live && feedSymbol ? `$${feedSymbol} price` : `$${ticker} price`}
             </p>
             <p className="pf-mono mt-1 text-2xl font-bold text-[var(--ink)]">
               {live && price != null ? formatPrice(price) : "—"}
@@ -253,7 +256,7 @@ export function LandingSidebar() {
                 : "bg-[#efe0bc] text-[var(--wood-mid)]"
             }`}
           >
-            {live ? (isProxy ? `Live · $${feedSymbol} proxy` : "Live") : "Sample"}
+            {live ? "Live" : "Sample"}
           </span>
         </div>
         <div className="mt-3 rounded-lg border border-[var(--rule)] bg-[#fffdf6] p-2">
@@ -261,10 +264,8 @@ export function LandingSidebar() {
         </div>
         <p className="mt-2 text-[10px] leading-snug text-[var(--ink-muted)]">
           {live
-            ? isProxy
-              ? `Live Dexscreener feed for $${feedSymbol} on Robinhood Chain — plumbing test until $${TOKEN_TICKER} launches. Not $${TOKEN_TICKER} price.`
-              : `Live Dexscreener quote · refreshes ~15s.`
-            : `Sample chart — live feed connects at launch. Not a live quote.`}
+            ? `Read from the bonding curve on Robinhood Chain · refreshes ~15s.`
+            : `No live quote yet — the chart fills in once the launch is configured.`}
         </p>
         {pairUrl ? (
           <a
@@ -273,7 +274,7 @@ export function LandingSidebar() {
             rel="noreferrer"
             className="mt-2 inline-block text-[11px] font-bold text-[var(--wood-mid)] underline-offset-2 hover:underline"
           >
-            View on Dexscreener →
+            View chart →
           </a>
         ) : null}
       </div>
@@ -292,19 +293,21 @@ export function LandingSidebar() {
                 : "bg-[#efe0bc] text-[var(--wood-mid)]"
             }`}
           >
-            {silo?.live ? "Live" : "Demo feed"}
+            {silo?.live ? (silo.stale ? "Last known" : "Live") : "—"}
           </span>
         </div>
         <p className="pf-mono mt-2 text-2xl font-bold text-[var(--green)]">
-          {silo?.live ? formatNumber(silo.siloBalance, 2) : "—"}{" "}
+          {silo?.live && silo.siloBalance != null
+            ? formatNumber(silo.siloBalance, 3)
+            : "—"}{" "}
           <span className="text-sm font-semibold text-[var(--ink-muted)]">ETH</span>
         </p>
         <p className="mt-1 text-[11px] text-[var(--ink-muted)]">
           Season {silo?.season.number ?? "—"} fee pot ·{" "}
-          {silo?.live
+          {silo?.live && silo.percentFull != null
             ? `${formatNumber(silo.percentFull, 1)}% of ${formatNumber(silo.siloTarget, 0)} ETH target`
             : silo
-              ? "Live treasury unavailable"
+              ? "pot not readable yet"
               : "loading…"}
         </p>
         <div className="pf-progress mt-3" aria-hidden>
@@ -351,7 +354,7 @@ export function LandingSidebar() {
         {mintLive ? (
           <>
             <p className="pf-mono mt-2 break-all text-[12px] leading-relaxed text-[var(--ink)]">
-              {TOKEN_MINT}
+              {contractAddress}
             </p>
             <button
               type="button"
@@ -376,9 +379,10 @@ export function LandingSidebar() {
         )}
         <a
           href={
-            mintLive
-              ? pairUrl ?? "https://dexscreener.com"
-              : pairUrl ?? "#tokenomics"
+            mintLive && contractAddress
+              ? (pairUrl ??
+                `https://www.ponsfamily.com/launchpad/${contractAddress}`)
+              : (pairUrl ?? "#tokenomics")
           }
           className={`pf-btn pf-btn-primary mt-3 w-full !rounded-lg ${
             mintLive || pairUrl ? "" : "pointer-events-none opacity-50"
@@ -387,7 +391,7 @@ export function LandingSidebar() {
           rel={pairUrl ? "noreferrer" : undefined}
           aria-disabled={!mintLive && !pairUrl}
         >
-          {mintLive ? `Buy $${TOKEN_TICKER}` : live ? `View $${feedSymbol} chart` : `Buy $${TOKEN_TICKER}`}
+          {mintLive ? `Buy $${ticker}` : live ? `View $${feedSymbol} chart` : `Buy $${ticker}`}
         </a>
       </div>
 
@@ -402,7 +406,7 @@ export function LandingSidebar() {
         <StatPill
           label="Mkt cap"
           value={formatMarketCap(mcapUsd)}
-          hint={live ? (isProxy ? `$${feedSymbol} live` : "Live") : "At launch"}
+          hint={live ? "Live" : "At launch"}
           icon="coin_farm"
           live={live && mcapUsd != null}
         />

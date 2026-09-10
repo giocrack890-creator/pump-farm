@@ -252,7 +252,7 @@ export function computePayouts({
   tier1End = Math.min(tier1End, n)
   tier1End = expandCutoffForTies(active, tier1End)
 
-  let tier2Target = Math.ceil(n * PAYOUT_TIER_2_PCT)
+  const tier2Target = Math.ceil(n * PAYOUT_TIER_2_PCT)
   let tier2End = Math.min(tier1End + tier2Target, n)
   if (tier2End > tier1End) {
     tier2End = expandCutoffForTies(active, tier2End)

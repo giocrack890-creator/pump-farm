@@ -1,9 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { HUD } from "@/components/hud/hudAssets";
 import { formatNumber } from "@/lib/utils";
-import { ETH_USD_DISPLAY } from "@/lib/game/config";
+import { useSeasonPot } from "@/hooks/useSeasonPot";
 
 type Props = {
   onOpen: () => void;
@@ -11,14 +10,10 @@ type Props = {
 
 /** Compact season pot chip — English. */
 export function PoolHudChip({ onOpen }: Props) {
-  const seasonQ = useQuery({
-    queryKey: ["season"],
-    queryFn: async () => (await fetch("/api/season")).json(),
-    refetchInterval: 30_000,
-  });
-
-  const pool = Number(seasonQ.data?.pool?.displayBalance ?? 42.5);
-  const usd = pool * ETH_USD_DISPLAY;
+  const { pot } = useSeasonPot();
+  // A dash while the chain has not answered: this chip is the first number a
+  // player sees, and a made-up one sets the expectation for everything after.
+  const usd = pot.usd;
 
   return (
     <button
@@ -35,10 +30,12 @@ export function PoolHudChip({ onOpen }: Props) {
         </p>
       </div>
       <p className="mt-1 font-[family-name:var(--font-pixel)] text-[16px] tabular-nums leading-none text-[#7bb85c]">
-        ${formatNumber(usd, 0)}
+        {usd != null ? `$${formatNumber(usd, 0)}` : "—"}
       </p>
       <p className="mt-1 text-[8px] text-[#9dffb8]/80">
-        Live · {formatNumber(pool, 2)} ETH · tap
+        {pot.eth != null
+          ? `${pot.stale ? "Last known" : "Live"} · ${formatNumber(pot.eth, 3)} ETH · tap`
+          : "Waiting on chain · tap"}
       </p>
     </button>
   );

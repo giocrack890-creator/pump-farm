@@ -1,18 +1,20 @@
-import { fetchTreasurySnapshot } from "@/lib/evm/treasury";
 import {
   PAYOUT_TIER_1_PCT,
   PAYOUT_TIER_1_SHARE,
   PAYOUT_TIER_2_PCT,
   PAYOUT_TIER_2_SHARE,
   PAYOUT_TIER_3_SHARE,
-  SILO_TARGET_ETH,
-  TOKEN_TICKER,
 } from "@/lib/game/config";
-import { isDemoDbMode } from "@/lib/demo/farmMemory";
+import { getAppConfig } from "@/lib/config/appConfig";
+import { getPotSnapshot } from "@/lib/pot/snapshot";
 
 /**
  * Public season + Silo snapshot for the marketing landing sidebar.
- * Silo balance comes from the same treasury path as the in-game pot.
+ *
+ * The Silo here is the same figure the game and the admin panel show: fees
+ * claimable, fees still accruing, and what is already in the treasury. It used
+ * to be the treasury balance alone, which is a fraction of the pot and made the
+ * landing quote a smaller number than the rewards page.
  */
 export async function GET() {
   const now = new Date();
@@ -33,26 +35,29 @@ export async function GET() {
     endsAt = end.toISOString();
   }
 
-  const treasury = await fetchTreasurySnapshot();
-  // Real on-chain balance only — never MOCK_TREASURY_ETH display stand-in
-  const liveTreasury = treasury.balanceEth != null && !isDemoDbMode();
-  const siloBalance = liveTreasury ? Number(treasury.balanceEth) : 0;
-  const siloTarget = SILO_TARGET_ETH;
-  const percentFull = liveTreasury
-    ? Math.min(100, Math.max(0, (siloBalance / siloTarget) * 100))
-    : 0;
+  const [pot, config] = await Promise.all([getPotSnapshot(), getAppConfig()]);
+
+  const live = pot.ok || pot.stale;
+  // Null, not zero: an unread pot is unknown, and zero is a claim.
+  const siloBalance = live ? pot.potEth : null;
+  const siloTarget = pot.siloTargetEth;
+  const percentFull =
+    siloBalance != null
+      ? Math.min(100, Math.max(0, (siloBalance / siloTarget) * 100))
+      : null;
 
   return Response.json({
-    ticker: TOKEN_TICKER,
+    ticker: config.tokenTicker,
     season: {
       number: seasonNumber,
       startsAt,
       endsAt,
     },
     siloBalance,
+    siloBalanceUsd: pot.potUsd,
     siloBalanceUnit: "ETH",
     siloTarget,
-    percentFull: Number(percentFull.toFixed(2)),
+    percentFull: percentFull == null ? null : Number(percentFull.toFixed(2)),
     payoutSplit: [
       {
         id: "top",
@@ -70,7 +75,8 @@ export async function GET() {
         share: PAYOUT_TIER_3_SHARE,
       },
     ],
-    live: liveTreasury,
-    treasuryAddress: treasury.address || null,
+    live,
+    stale: pot.stale,
+    treasuryAddress: pot.treasury,
   });
 }

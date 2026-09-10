@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ensureCurrentSeason, findActiveSeason } from "@/lib/farm/helpers";
 import { computePayouts } from "@/lib/game/payout";
-import { fetchTreasurySnapshot } from "@/lib/evm/treasury";
+import { getPotSnapshot } from "@/lib/pot/snapshot";
 import { getDemoWallet, isDemoDbMode } from "@/lib/demo/farmMemory";
 import { canUseAuthDb } from "@/lib/auth/db";
 
@@ -61,8 +61,11 @@ export async function GET(request: Request) {
     });
   }
 
-  const treasury = await fetchTreasurySnapshot();
-  const poolEth = treasury.displayBalance;
+  // The projected payouts on the board are a share of the real pot. When the
+  // chain has not answered there is no pool to project against, so every
+  // projection reads zero rather than a share of an invented figure.
+  const pot = await getPotSnapshot();
+  const poolEth = pot.ok || pot.stale ? pot.potEth : 0;
 
   if (scope === "alltime") {
     const grouped = await prisma.seasonPoint.groupBy({

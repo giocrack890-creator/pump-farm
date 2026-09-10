@@ -1,11 +1,11 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { HudBottomSheet } from "@/components/hud/HudBottomSheet";
 import { FeesPoolPanel } from "@/components/rewards/FeesPoolPanel";
 import { StakePanel } from "@/components/rewards/StakePanel";
 import { useFarmStore } from "@/store/useFarmStore";
 import { DISCLAIMER } from "@/components/layout/Footer";
+import { projectedShareEth, useSeasonPot } from "@/hooks/useSeasonPot";
 
 type Props = {
   open: boolean;
@@ -16,16 +16,7 @@ type Props = {
 export function RewardsSheet({ open, onClose }: Props) {
   const sp = useFarmStore((s) => s.sp);
 
-  const seasonQ = useQuery({
-    queryKey: ["season"],
-    queryFn: async () => (await fetch("/api/season")).json(),
-    refetchInterval: open ? 30_000 : false,
-    enabled: open,
-  });
-
-  const pool = Number(seasonQ.data?.pool?.displayBalance ?? 42.5);
-  const endsAt = seasonQ.data?.season?.endsAt ?? null;
-  const projectedShare = Math.max(0, sp) * 0.00015;
+  const { pot, endsAt, isLoading } = useSeasonPot({ enabled: open });
 
   return (
     <HudBottomSheet
@@ -38,9 +29,17 @@ export function RewardsSheet({ open, onClose }: Props) {
     >
       <div className="space-y-4">
         <FeesPoolPanel
-          poolEth={pool}
+          poolEth={pot.eth}
+          ethUsd={pot.ethUsd}
+          claimableEth={pot.claimableEth}
+          pendingEth={pot.pendingEth}
+          treasuryEth={pot.treasuryEth}
+          siloTarget={pot.siloTargetEth}
+          stale={pot.stale}
+          reason={pot.reason}
+          loading={isLoading}
           yourSp={sp}
-          yourProjectedEth={projectedShare}
+          yourProjectedEth={projectedShareEth(pot.eth, sp)}
           endsAt={endsAt}
         />
         <StakePanel />

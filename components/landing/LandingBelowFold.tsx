@@ -5,13 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import {
   TOKEN_TICKER,
-  TOKEN_MINT,
   PAYOUT_TIER_1_PCT,
   PAYOUT_TIER_1_SHARE,
   PAYOUT_TIER_2_PCT,
   PAYOUT_TIER_2_SHARE,
   PAYOUT_TIER_3_SHARE,
 } from "@/lib/game/config";
+import { useAppConfig } from "@/hooks/useAppConfig";
 
 const features = [
   {
@@ -140,6 +140,12 @@ function MiniSparkline({ rising = true }: { rising?: boolean }) {
 
 function CopyCA({ dark = false }: { dark?: boolean }) {
   const [copied, setCopied] = useState(false);
+  const { tokenAddress } = useAppConfig();
+
+  // Nothing to copy before a launch is configured, and a zero-address CA button
+  // is worse than none: people paste it into a wallet.
+  if (!tokenAddress) return null;
+
   return (
     <button
       type="button"
@@ -149,13 +155,13 @@ function CopyCA({ dark = false }: { dark?: boolean }) {
           : "border-[#2b1b5e]/15 bg-white text-[#2b1b5e] hover:bg-[#f5f0ff]"
       }`}
       onClick={async () => {
-        await navigator.clipboard.writeText(TOKEN_MINT);
+        await navigator.clipboard.writeText(tokenAddress);
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
       aria-label="Copy token contract address"
     >
-      CA: {TOKEN_MINT.slice(0, 6)}…{TOKEN_MINT.slice(-4)}
+      CA: {tokenAddress.slice(0, 6)}…{tokenAddress.slice(-4)}
       <span className={`font-sans font-semibold ${dark ? "text-[#FFC94D]" : "text-[#2b1b5e]"}`}>
         {copied ? "Copied" : "Copy"}
       </span>

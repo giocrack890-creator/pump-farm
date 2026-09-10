@@ -94,9 +94,16 @@ export const STAKE_LOCK_TIERS = [
   { lockDays: 30, spBonus: 0.25 },
 ] as const
 
-export const MIN_PAYOUT_FARM_BALANCE = Number(
-  process.env.MIN_PAYOUT_FARM_BALANCE ?? "0",
-)
+/**
+ * Payouts below this many wei are skipped: a transfer that costs more gas than
+ * it delivers is worse than not sending it, and the row stays pending for an
+ * operator to fold in or void.
+ */
+export const MIN_PAYOUT_WEI = (() => {
+  const raw = process.env.MIN_PAYOUT_WEI?.trim()
+  const n = raw ? Number(raw) : 0
+  return Number.isFinite(n) && n >= 0 ? n : 0
+})()
 
 /**
  * Weather thresholds as price-change fractions (0.15 = +15%).
@@ -108,55 +115,33 @@ export const WEATHER_STORM_FRACTION = -0.05
 /** Decimal places used when splitting token amounts (ERC-20 default = 18). */
 export const PAYOUT_AMOUNT_DECIMALS = 18
 
+/**
+ * Seed value only. The live ticker, like the token address and the treasury,
+ * is a database row read through `lib/config/appConfig.ts` — a build-time
+ * constant cannot be changed without a redeploy, which is the whole reason the
+ * runtime config exists.
+ */
 export const TOKEN_TICKER = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "FARM"
-/** ERC-20 contract address on Robinhood Chain (0x…). Placeholder until deploy + audit. */
-export const TOKEN_MINT =
-  process.env.NEXT_PUBLIC_TOKEN_MINT ??
-  "0x0000000000000000000000000000000000000000"
-export const TREASURY_WALLET =
-  process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS ??
-  process.env.TREASURY_WALLET_ADDRESS ??
-  ""
 
-/** Season Silo fill target (ETH) for % full UI. */
+/** Fallback Silo fill target (ETH) for the % full bar; overridden in /admin. */
 export const SILO_TARGET_ETH = (() => {
   const raw =
-    process.env.SILO_TARGET_ETH ??
-    process.env.NEXT_PUBLIC_SILO_TARGET_ETH ??
-    process.env.SILO_TARGET_SOL ??
-    process.env.NEXT_PUBLIC_SILO_TARGET_SOL
+    process.env.SILO_TARGET_ETH ?? process.env.NEXT_PUBLIC_SILO_TARGET_ETH
   const n = Number(raw ?? "100")
   return Number.isFinite(n) && n > 0 ? n : 100
 })()
 
-/** @deprecated pot is ETH on Robinhood Chain */
-export const SILO_TARGET_SOL = SILO_TARGET_ETH
-
-/** Display FX for ETH → USD in pot UI (not on-chain oracle). */
-export const ETH_USD_DISPLAY = (() => {
-  const raw =
-    process.env.NEXT_PUBLIC_ETH_USD ??
-    process.env.ETH_USD ??
-    process.env.NEXT_PUBLIC_SOL_USD ??
-    process.env.SOL_USD
-  const n = Number(raw ?? "2460")
-  return Number.isFinite(n) && n > 0 ? n : 2460
-})()
-
-/** @deprecated use ETH_USD_DISPLAY */
-export const SOL_USD_DISPLAY = ETH_USD_DISPLAY
+/**
+ * There is no fixed ETH→USD constant any more.
+ *
+ * A hardcoded 2460 was multiplying every pot and tier figure on the site, so
+ * every dollar amount a player saw was wrong by however far the rate had moved
+ * since the number was typed. The live rate comes from `lib/market/ethUsd.ts`,
+ * and a pot with no rate available shows no dollar figure at all.
+ */
 
 /**
- * Only treat $FARM ERC-20 as live when explicitly configured (not a zero/placeholder).
- * Landing CA card shows "not live yet" until this is true.
- * Being on Robinhood Chain ≠ listed inside the Robinhood brokerage app.
+ * Whether the token is live is now answered by the runtime config — a
+ * configured address means live. See `useAppConfig()` on the client and
+ * `getAppConfig()` on the server; both reject the zero address as unset.
  */
-export function isTokenMintLive(): boolean {
-  const mint = process.env.NEXT_PUBLIC_TOKEN_MINT?.trim()
-  if (!mint) return false
-  if (process.env.NEXT_PUBLIC_TOKEN_LIVE === "true") return true
-  if (mint === "So11111111111111111111111111111111111111112") return false
-  if (mint.toLowerCase().includes("replace")) return false
-  if (/^0x0+$/i.test(mint)) return false
-  return /^0x[a-fA-F0-9]{40}$/.test(mint)
-}
