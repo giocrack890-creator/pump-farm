@@ -80,9 +80,9 @@ export function RanksSheet({ open, onClose }: Props) {
     <HudBottomSheet
       open={open}
       onClose={onClose}
-      title="Ranks"
-      subtitle="Season Points ranking — projected payouts settle on-chain at season end."
-      ariaLabel="Leaderboard ranks"
+      title="Ranking"
+      subtitle="Quién va primero en SP esta Season. Eso define cuánto del pozo te toca."
+      ariaLabel="Ranking de la Season"
       maxHeightClass="max-h-[85vh]"
     >
       <div className="mb-3 flex gap-2">

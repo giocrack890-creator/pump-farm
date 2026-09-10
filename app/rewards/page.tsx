@@ -37,10 +37,10 @@ export default function RewardsPage() {
       <div className="mx-auto w-full max-w-6xl px-4 py-8 pb-24">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div className={`max-w-2xl p-4 ${hudPanel}`}>
-            <p className={`text-[11px] ${hudInk}`}>The Silo</p>
+            <p className={`text-[11px] ${hudInk}`}>Premios de temporada (Silo)</p>
             <p className={`mt-2 text-sm leading-relaxed ${hudInkMuted}`}>
-              No hidden wallets, no trust-me-bro tokenomics. Every dollar in the Silo came from
-              real trading fees, and every payout is on-chain.
+              El Silo es el pozo de premios de la Season: fees reales de $FARM. Cosechás → ganás
+              SP → al cerrar la Season te toca un % del pozo según tu ranking.
             </p>
           </div>
           <Link

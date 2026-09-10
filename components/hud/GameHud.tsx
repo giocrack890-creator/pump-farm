@@ -164,7 +164,7 @@ export function BottomNav({
   onSelect: (id: string) => void;
 }) {
   const tabs = [
-    { id: "silo", label: "Silo", icon: "/assets/icons/silo.png" },
+    { id: "silo", label: "Premios", icon: "/assets/icons/silo.png" },
     { id: "shop", label: "Shop", icon: "/assets/icons/shop.png" },
     { id: "farmers", label: "Hire", icon: "/assets/icons/companion.png" },
     { id: "almanac", label: "Book", icon: "/assets/icons/almanac.png" },
@@ -224,11 +224,11 @@ export function ShortcutIcons({
           <ArtIcon src="/assets/icons/rewards.png" alt="" className="h-7 w-7" />
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 border border-[#3a2414] bg-[#ff4d4d]" />
         </span>
-        Rewards
+        Premios
       </button>
       <button type="button" className={item} onClick={onLeaderboard}>
         <ArtIcon src="/assets/icons/ranks.png" alt="" className="h-7 w-7" />
-        Ranks
+        Ranking
       </button>
     </div>
   );

@@ -25,9 +25,10 @@ const DATA = [
 export function PayoutCurveChart() {
   return (
     <div className={`p-4 ${hudPanel}`}>
-      <p className={`text-[11px] ${hudInk}`}>Payout curve</p>
+      <p className={`text-[11px] ${hudInk}`}>Cómo se reparte el pozo</p>
       <p className={`mt-1 text-sm ${hudInkMuted}`}>
-        Top 1% = 50% of pool, next 9% = 30%, remaining active farmers = 20%.
+        Los que más SP tienen se llevan más. Top 1% ≈ 50% del pozo · siguientes 9% ≈ 30% · resto
+        activo ≈ 20%.
       </p>
       <div className="mt-3 h-64 border-[3px] border-[#3a2414] bg-[#fff8e8]/40 p-2">
         <ResponsiveContainer width="100%" height="100%">
