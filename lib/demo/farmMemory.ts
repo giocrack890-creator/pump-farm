@@ -129,6 +129,7 @@ function freshPlots(size = 3): DemoPlot[] {
 function freshWallet(): DemoWallet {
   return {
     address: DEMO_ADDRESS,
+    displayName: null,
     hypeBalance: 0,
     harvestStreak: 0,
     lastHarvestDay: null,
@@ -191,6 +192,7 @@ export function getDemoWallet(): DemoWallet {
   if (w.pendingOfflineSummary === undefined) w.pendingOfflineSummary = null;
   if (!w.workerUpgrades) w.workerUpgrades = { ...DEFAULT_WORKER_UPGRADES };
   if (!w.autoSeedTier || !(w.autoSeedTier in SEED_DEFS)) w.autoSeedTier = "Basic";
+  if (w.displayName === undefined) w.displayName = null;
   return w;
 }
 
@@ -401,6 +403,7 @@ export function demoFarmSnapshot() {
     demoSave: exportDemoSave(),
     wallet: {
       address: w.address,
+      displayName: w.displayName,
       hypeBalance: String(w.hypeBalance),
       harvestStreak: w.harvestStreak,
       referralCode: w.referralCode,

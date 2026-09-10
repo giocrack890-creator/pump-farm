@@ -117,6 +117,10 @@ export function normalizeDemoWallet(raw: unknown): DemoWallet | null {
 
   return {
     address: typeof o.address === "string" ? o.address : DEMO_ADDRESS,
+    displayName:
+      typeof o.displayName === "string" && o.displayName.trim()
+        ? o.displayName.trim()
+        : null,
     hypeBalance: Math.max(0, hypeNum),
     harvestStreak: Math.max(0, Number(o.harvestStreak) || 0),
     lastHarvestDay: typeof o.lastHarvestDay === "string" ? o.lastHarvestDay : null,

@@ -13,6 +13,8 @@ model Wallet {
   referredBy      String?
   referralCode    String        @unique
   xHandle         String?
+  /// Public farmer name shown on leaderboards (not the wallet address).
+  displayName     String?       @unique
   flaggedSybil    Boolean       @default(false)
   /// In-game Hype balance. Never accept client-submitted balances.
   hypeBalance     Decimal       @default(50) @db.Decimal(20, 6)

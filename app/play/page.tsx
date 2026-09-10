@@ -30,6 +30,7 @@ import { ShopSheet, type AnimalsPanelState } from "@/components/sheets/ShopSheet
 import { NpcDialogue, NPC_TAP_LINES, type NpcId } from "@/components/hud/NpcDialogue";
 import { WalletButton } from "@/components/layout/WalletButton";
 import { FarmEnterGate } from "@/components/play/FarmEnterGate";
+import { FarmerNameGate } from "@/components/play/FarmerNameGate";
 import { DISCLAIMER } from "@/components/layout/Footer";
 import { useFarmStore } from "@/store/useFarmStore";
 import { useWalletStore } from "@/store/useWalletStore";
@@ -85,6 +86,8 @@ export default function PlayPage() {
   const router = useRouter();
   const jwt = useWalletStore((s) => s.jwt);
   const hasHydrated = useWalletStore((s) => s.hasHydrated);
+  const displayName = useWalletStore((s) => s.displayName);
+  const setDisplayName = useWalletStore((s) => s.setDisplayName);
   const syncFromServer = useFarmStore((s) => s.syncFromServer);
   const plots = useFarmStore((s) => s.plots);
   const hype = useFarmStore((s) => s.hype);
@@ -113,6 +116,7 @@ export default function PlayPage() {
   const [loadError, setLoadError] = useState(false);
   /** Once true, keep the Phaser farm mounted even if a poll fails. */
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [needsName, setNeedsName] = useState(false);
   const [plantPlot, setPlantPlot] = useState<ScenePlot | null>(null);
   const [nav, setNav] = useState("shop");
   const [panel, setPanel] = useState<
@@ -235,6 +239,12 @@ export default function PlayPage() {
       });
       if (data.wallet?.xp != null) setXp(Number(data.wallet.xp));
       if (data.wallet?.gridSize) usePlayerStore.getState().setGridSize(data.wallet.gridSize);
+      if (typeof data.wallet?.displayName === "string" && data.wallet.displayName) {
+        setDisplayName(data.wallet.displayName);
+        setNeedsName(false);
+      } else if (!useWalletStore.getState().displayName) {
+        setNeedsName(true);
+      }
       if (data.farmers) {
         const panelData = data.farmers as FarmersPanelState;
         const oh = panelData.offlineHarvest;
@@ -277,7 +287,7 @@ export default function PlayPage() {
     } finally {
       setLoading(false);
     }
-  }, [jwt, syncFromServer, setSeason, setXp, tutorialReplay, hasLoadedOnce]);
+  }, [jwt, syncFromServer, setSeason, setXp, setDisplayName, tutorialReplay, hasLoadedOnce]);
 
   useEffect(() => {
     void refresh();
@@ -719,6 +729,7 @@ export default function PlayPage() {
         </div>
       )}
       <StardewTopHud
+        farmerName={displayName}
         sp={sp}
         hype={hype}
         seasonLabel={seasonLabel}
@@ -738,6 +749,14 @@ export default function PlayPage() {
           })),
         ]}
       />
+      {needsName && !displayName ? (
+        <FarmerNameGate
+          onDone={(name) => {
+            setDisplayName(name);
+            setNeedsName(false);
+          }}
+        />
+      ) : null}
       <LeftIconColumn
         muted={musicHudMuted}
         onToggleMute={() => {

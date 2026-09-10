@@ -103,6 +103,7 @@ export async function GET(request: Request) {
   return Response.json({
     wallet: {
       address: wallet.address,
+      displayName: wallet.displayName,
       hypeBalance: wallet.hypeBalance.toString(),
       harvestStreak: wallet.harvestStreak,
       lastHarvestDay: wallet.lastHarvestDay,

@@ -6,6 +6,7 @@ import { truncateAddress, formatNumber, cn } from "@/lib/utils";
 export type LeaderboardRow = {
   rank: number;
   wallet: string;
+  displayName: string | null;
   farmSize: number;
   sp: number;
   projected: number;
@@ -18,6 +19,14 @@ type Props = {
 };
 
 export function LeaderboardTable({ rows, highlightWallet }: Props) {
+  if (!rows.length) {
+    return (
+      <div className="glass-panel rounded-2xl px-4 py-8 text-center text-sm text-muted">
+        No farmers ranked yet. Plant, harvest, and earn SP to appear here.
+      </div>
+    );
+  }
+
   return (
     <div className="glass-panel overflow-hidden rounded-2xl">
       <div className="overflow-x-auto">
@@ -25,7 +34,7 @@ export function LeaderboardTable({ rows, highlightWallet }: Props) {
           <thead className="border-b border-[var(--border)] bg-black/30 text-[11px] uppercase tracking-wider text-muted">
             <tr>
               <th className="px-4 py-3 font-medium">Rank</th>
-              <th className="px-4 py-3 font-medium">Wallet</th>
+              <th className="px-4 py-3 font-medium">Farmer</th>
               <th className="px-4 py-3 font-medium">Farm size</th>
               <th className="px-4 py-3 font-medium">SP</th>
               <th className="px-4 py-3 font-medium">Projected</th>
@@ -37,6 +46,8 @@ export function LeaderboardTable({ rows, highlightWallet }: Props) {
                 row.isYou ||
                 (highlightWallet &&
                   row.wallet.toLowerCase() === highlightWallet.toLowerCase());
+              const label = row.displayName?.trim() || truncateAddress(row.wallet, 4);
+              const avatarSeed = row.displayName?.trim() || row.wallet;
               return (
                 <tr
                   key={`${row.rank}-${row.wallet}`}
@@ -53,14 +64,14 @@ export function LeaderboardTable({ rows, highlightWallet }: Props) {
                       <span
                         className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-[#041008]"
                         style={{
-                          background: `linear-gradient(135deg, #3DFF7A, hsl(${(row.wallet.charCodeAt(0) * 17) % 360} 70% 45%))`,
+                          background: `linear-gradient(135deg, #3DFF7A, hsl(${(avatarSeed.charCodeAt(0) * 17) % 360} 70% 45%))`,
                         }}
                         aria-hidden
                       >
-                        {row.wallet.slice(0, 2)}
+                        {label.slice(0, 2).toUpperCase()}
                       </span>
-                      <span className="tabular-nums">
-                        {truncateAddress(row.wallet, 4)}
+                      <span className="font-medium">
+                        {label}
                         {you ? (
                           <span className="ml-2 text-xs text-primary">you</span>
                         ) : null}

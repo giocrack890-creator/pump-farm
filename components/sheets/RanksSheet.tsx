@@ -16,6 +16,32 @@ type Props = {
   onClose: () => void;
 };
 
+function mapEntries(data: unknown): LeaderboardRow[] {
+  const payload = data as {
+    entries?: Array<{
+      rank?: number;
+      address?: string;
+      walletId?: string;
+      wallet?: string;
+      displayName?: string | null;
+      points?: string | number;
+      sp?: number;
+      farmSize?: number;
+      projectedPayout?: string | number;
+      projected?: number;
+    }>;
+  };
+  const entries = payload?.entries ?? [];
+  return entries.map((r, i) => ({
+    rank: r.rank ?? i + 1,
+    wallet: r.wallet ?? r.address ?? r.walletId ?? `unknown-${i}`,
+    displayName: r.displayName ?? null,
+    farmSize: r.farmSize ?? 0,
+    sp: Number(r.sp ?? r.points ?? 0),
+    projected: Number(r.projected ?? r.projectedPayout ?? 0),
+  }));
+}
+
 /** Ranks / leaderboard as in-play popup. */
 export function RanksSheet({ open, onClose }: Props) {
   const [scope, setScope] = useState<"season" | "alltime">("season");
@@ -28,53 +54,8 @@ export function RanksSheet({ open, onClose }: Props) {
     enabled: open,
   });
 
-  const rows: LeaderboardRow[] = useMemo(() => {
-    const entries = (q.data?.entries ?? q.data?.rows ?? []) as Array<{
-      rank?: number;
-      address?: string;
-      walletId?: string;
-      wallet?: string;
-      points?: string | number;
-      sp?: number;
-      farmSize?: number;
-      projectedPayout?: string | number;
-      projected?: number;
-    }>;
-
-    if (!entries.length) {
-      return [
-        {
-          rank: 1,
-          wallet: "0xFARM000000000000000000000000000000000001",
-          farmSize: 18,
-          sp: 12840,
-          projected: 8.4,
-        },
-        {
-          rank: 2,
-          wallet: "B2nxPumpLeaderboardDemo22222222222222222",
-          farmSize: 15,
-          sp: 10220,
-          projected: 5.1,
-        },
-        {
-          rank: 3,
-          wallet: "9qLmSiloLeaderboardDemo33333333333333333",
-          farmSize: 12,
-          sp: 8810,
-          projected: 3.2,
-        },
-      ];
-    }
-
-    return entries.map((r, i) => ({
-      rank: r.rank ?? i + 1,
-      wallet: r.wallet ?? r.address ?? r.walletId ?? `unknown-${i}`,
-      farmSize: r.farmSize ?? 9,
-      sp: Number(r.sp ?? r.points ?? 0),
-      projected: Number(r.projected ?? r.projectedPayout ?? 0),
-    }));
-  }, [q.data]);
+  const rows = useMemo(() => mapEntries(q.data), [q.data]);
+  const isDemo = Boolean((q.data as { demo?: boolean } | undefined)?.demo);
 
   return (
     <HudBottomSheet
@@ -101,6 +82,11 @@ export function RanksSheet({ open, onClose }: Props) {
           All-Time
         </button>
       </div>
+      {isDemo ? (
+        <p className={`mb-2 text-[10px] ${hudInkMuted}`}>
+          Live ranking needs the production database. Demo only shows this device.
+        </p>
+      ) : null}
       {q.isLoading ? (
         <p className={`text-sm ${hudInkMuted}`}>Loading ranks…</p>
       ) : (

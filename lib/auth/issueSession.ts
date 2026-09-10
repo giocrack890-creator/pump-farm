@@ -14,6 +14,8 @@ export type IssuedSession = {
   token: string;
   address: string;
   isNew: boolean;
+  displayName: string | null;
+  needsDisplayName: boolean;
   referralCode: string | null;
   seasonId: string | null;
   seasonNumber: number | null;
@@ -34,6 +36,8 @@ export async function upsertWalletAndIssueToken(
       token,
       address,
       isNew: false,
+      displayName: getDemoWallet().displayName ?? null,
+      needsDisplayName: !getDemoWallet().displayName,
       referralCode: null,
       seasonId: null,
       seasonNumber: null,
@@ -108,6 +112,8 @@ export async function upsertWalletAndIssueToken(
     token,
     address: wallet.address,
     isNew,
+    displayName: wallet.displayName ?? null,
+    needsDisplayName: !wallet.displayName,
     referralCode: wallet.referralCode,
     seasonId: season.id,
     seasonNumber: season.number,

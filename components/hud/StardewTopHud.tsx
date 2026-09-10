@@ -26,6 +26,7 @@ function ArtIcon({ src, alt, className }: { src: string; alt: string; className?
 }
 
 export function StardewTopHud({
+  farmerName,
   sp,
   hype,
   seasonLabel,
@@ -33,6 +34,7 @@ export function StardewTopHud({
   hypePerSec = 0,
   incomeBreakdown,
 }: {
+  farmerName?: string | null;
   sp: number;
   hype: number;
   seasonLabel: string;
@@ -45,6 +47,7 @@ export function StardewTopHud({
   const nextUnlock = nextUnlockLabel(level);
   const [rateOpen, setRateOpen] = useState(false);
   const reduce = useReducedMotion();
+  const nameLabel = farmerName?.trim() || "Farmer";
 
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-3 p-2 md:p-3">
@@ -71,7 +74,7 @@ export function StardewTopHud({
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-1">
             <ArtIcon src={HUD.xp} alt="XP" className="h-5 w-5" />
-            <p className={`truncate text-[9px] ${ink}`}>Farmer</p>
+            <p className={`truncate text-[9px] ${ink}`}>{nameLabel}</p>
           </div>
           <div className="relative h-4 w-full overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}

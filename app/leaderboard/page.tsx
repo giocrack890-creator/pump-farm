@@ -10,6 +10,32 @@ import {
 import { useWalletStore } from "@/store/useWalletStore";
 import { DISCLAIMER } from "@/components/layout/Footer";
 
+function mapEntries(data: unknown): LeaderboardRow[] {
+  const payload = data as {
+    entries?: Array<{
+      rank?: number;
+      address?: string;
+      walletId?: string;
+      wallet?: string;
+      displayName?: string | null;
+      points?: string | number;
+      sp?: number;
+      farmSize?: number;
+      projectedPayout?: string | number;
+      projected?: number;
+    }>;
+  };
+  const entries = payload?.entries ?? [];
+  return entries.map((r, i) => ({
+    rank: r.rank ?? i + 1,
+    wallet: r.wallet ?? r.address ?? r.walletId ?? `unknown-${i}`,
+    displayName: r.displayName ?? null,
+    farmSize: r.farmSize ?? 0,
+    sp: Number(r.sp ?? r.points ?? 0),
+    projected: Number(r.projected ?? r.projectedPayout ?? 0),
+  }));
+}
+
 export default function LeaderboardPage() {
   const [scope, setScope] = useState<"season" | "alltime">("season");
   const highlight = useWalletStore((s) => s.address);
@@ -21,53 +47,8 @@ export default function LeaderboardPage() {
     refetchInterval: 20_000,
   });
 
-  const rows: LeaderboardRow[] = useMemo(() => {
-    const entries = (q.data?.entries ?? q.data?.rows ?? []) as Array<{
-      rank?: number;
-      address?: string;
-      walletId?: string;
-      wallet?: string;
-      points?: string | number;
-      sp?: number;
-      farmSize?: number;
-      projectedPayout?: string | number;
-      projected?: number;
-    }>;
-
-    if (!entries.length) {
-      return [
-        {
-          rank: 1,
-          wallet: "0xFARM000000000000000000000000000000000001",
-          farmSize: 18,
-          sp: 12840,
-          projected: 8.4,
-        },
-        {
-          rank: 2,
-          wallet: "B2nxPumpLeaderboardDemo22222222222222222",
-          farmSize: 15,
-          sp: 10220,
-          projected: 5.1,
-        },
-        {
-          rank: 3,
-          wallet: "9qLmSiloLeaderboardDemo33333333333333333",
-          farmSize: 12,
-          sp: 8810,
-          projected: 3.2,
-        },
-      ];
-    }
-
-    return entries.map((r, i) => ({
-      rank: r.rank ?? i + 1,
-      wallet: r.wallet ?? r.address ?? r.walletId ?? `unknown-${i}`,
-      farmSize: r.farmSize ?? 9,
-      sp: Number(r.sp ?? r.points ?? 0),
-      projected: Number(r.projected ?? r.projectedPayout ?? 0),
-    }));
-  }, [q.data]);
+  const rows = useMemo(() => mapEntries(q.data), [q.data]);
+  const isDemo = Boolean((q.data as { demo?: boolean } | undefined)?.demo);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-24">
@@ -76,10 +57,14 @@ export default function LeaderboardPage() {
           Leaderboard
         </h1>
         <p className="max-w-2xl text-white/55">
-          Ranked by Season Points. Projected payouts assume the current Silo
-          balance and published curve — final amounts settle on-chain at season
-          end.
+          Ranked by Season Points. Names are farmer handles — projected payouts
+          assume the current Silo balance and settle on-chain at season end.
         </p>
+        {isDemo ? (
+          <p className="text-sm text-amber-200/80">
+            Demo mode: only this device is ranked until production DB is connected.
+          </p>
+        ) : null}
       </div>
 
       <Tabs
@@ -91,10 +76,18 @@ export default function LeaderboardPage() {
           <TabsTrigger value="alltime">All-Time</TabsTrigger>
         </TabsList>
         <TabsContent value="season">
-          <LeaderboardTable rows={rows} highlightWallet={highlight} />
+          {q.isLoading ? (
+            <p className="text-sm text-white/50">Loading ranks…</p>
+          ) : (
+            <LeaderboardTable rows={rows} highlightWallet={highlight} />
+          )}
         </TabsContent>
         <TabsContent value="alltime">
-          <LeaderboardTable rows={rows} highlightWallet={highlight} />
+          {q.isLoading ? (
+            <p className="text-sm text-white/50">Loading ranks…</p>
+          ) : (
+            <LeaderboardTable rows={rows} highlightWallet={highlight} />
+          )}
         </TabsContent>
       </Tabs>
       <p className="mt-10 max-w-3xl text-[11px] leading-relaxed text-white/40">{DISCLAIMER}</p>

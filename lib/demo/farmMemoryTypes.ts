@@ -22,6 +22,7 @@ export type DemoPlot = {
 
 export type DemoWallet = {
   address: string;
+  displayName: string | null;
   hypeBalance: number;
   harvestStreak: number;
   lastHarvestDay: string | null;

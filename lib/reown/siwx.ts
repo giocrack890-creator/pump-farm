@@ -79,8 +79,17 @@ export const pumpFarmSIWX: SIWXConfig = {
       });
       throw new Error(msg);
     }
-    const data = (await res.json()) as { address: string; token: string };
-    useWalletStore.getState().setAuth(data.address, data.token);
+    const data = (await res.json()) as {
+      address: string;
+      token: string;
+      displayName?: string | null;
+      needsDisplayName?: boolean;
+    };
+    useWalletStore.getState().setAuth(
+      data.address,
+      data.token,
+      data.displayName ?? null,
+    );
   },
 
   getSessions: async (
