@@ -12,6 +12,16 @@
 | Season default | **Spring** terrain + summer green tree accents |
 | In-repo path | `assets/sprites/farming-sim/32x32/` (source) → served from `public/assets/sprites/farming-sim/` |
 
+## HUD / UI pack
+
+| Field | Value |
+|-------|--------|
+| Sheet | `assets/sprites/ui/hud-pack/PUMP_FARM_HUD_UI_Asset_Pack.png` |
+| Served slices | `public/assets/sprites/ui/hud/*` |
+| Code paths | `components/hud/hudAssets.ts` |
+
+Includes: wood panels (9-slice), stat pills, progress bar, nav frames, button states, 20× 32-ish icons (coin, hype, XP, silo, medal, etc.). These are **UI chrome only** — world art remains VectoRaith farming-sim only.
+
 ## What we use
 
 - **Terrain:** `Tilesets (Compact)/…terrain_spring_expanded_32x32.png` → `public/.../tiles/terrain_spring.png`

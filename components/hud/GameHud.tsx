@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Share2, Volume2, VolumeX, Camera, Menu } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import { useXpBar } from "@/store/usePlayerStore";
 import { nextUnlockLabel, unlocksAtLevel } from "@/lib/game/xp";
 import { BARN_MILESTONE_LABELS, barnVisualFromLevel } from "@/lib/game/barnVisual";
+import { HUD } from "@/components/hud/hudAssets";
 
 /** Chunky pixel-panel frame (Sprout Lands–adjacent wood chrome). */
 const panel =
@@ -132,26 +132,37 @@ export function LeftIconColumn({
   onShare: () => void;
   onMenu: () => void;
 }) {
-  const btn = `${panel} flex h-11 w-11 cursor-pointer items-center justify-center text-[#1a1008] hover:brightness-110`;
+  const btn =
+    "pointer-events-auto relative flex h-12 w-12 cursor-pointer items-center justify-center hover:brightness-110";
   return (
     <div className="absolute left-3 top-28 z-20 flex flex-col gap-2 md:left-4">
-      <button type="button" className={btn} aria-label="Share" onClick={onShare}>
-        <Share2 className="h-4 w-4" strokeWidth={2.5} />
-      </button>
-      <button type="button" className={btn} aria-label="Toggle sound" onClick={onToggleMute}>
-        {muted ? <VolumeX className="h-4 w-4" strokeWidth={2.5} /> : <Volume2 className="h-4 w-4" strokeWidth={2.5} />}
-      </button>
-      <button
-        type="button"
-        className={btn}
-        aria-label="Screenshot"
-        onClick={() => alert("Screenshot: use your OS capture for now")}
-      >
-        <Camera className="h-4 w-4" strokeWidth={2.5} />
-      </button>
-      <button type="button" className={btn} aria-label="Menu" onClick={onMenu}>
-        <Menu className="h-4 w-4" strokeWidth={2.5} />
-      </button>
+      {(
+        [
+          { label: "Share", onClick: onShare, icon: HUD.share },
+          {
+            label: "Toggle sound",
+            onClick: onToggleMute,
+            icon: muted ? HUD.soundOff : HUD.soundOn,
+          },
+          {
+            label: "Screenshot",
+            onClick: () => alert("Screenshot: use your OS capture for now"),
+            icon: HUD.camera,
+          },
+          { label: "Menu", onClick: onMenu, icon: HUD.settings },
+        ] as const
+      ).map((b) => (
+        <button key={b.label} type="button" className={btn} aria-label={b.label} onClick={b.onClick}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={HUD.navFrame}
+            alt=""
+            className="absolute inset-0 h-full w-full object-fill [image-rendering:pixelated]"
+            draggable={false}
+          />
+          <ArtIcon src={b.icon} alt="" className="relative z-10 h-7 w-7" />
+        </button>
+      ))}
     </div>
   );
 }
@@ -164,32 +175,47 @@ export function BottomNav({
   onSelect: (id: string) => void;
 }) {
   const tabs = [
-    { id: "silo", label: "Premios", icon: "/assets/icons/silo.png" },
-    { id: "shop", label: "Shop", icon: "/assets/icons/shop.png" },
-    { id: "farmers", label: "Hire", icon: "/assets/icons/companion.png" },
-    { id: "almanac", label: "Book", icon: "/assets/icons/almanac.png" },
-    { id: "decorate", label: "Decor", icon: "/assets/icons/decorate.png" },
-    { id: "friends", label: "Friends", icon: "/assets/icons/friends.png" },
+    { id: "silo", label: "Premios", icon: HUD.silo },
+    { id: "shop", label: "Shop", icon: HUD.seed },
+    { id: "farmers", label: "Hire", icon: HUD.heart },
+    { id: "almanac", label: "Book", icon: HUD.bag },
+    { id: "decorate", label: "Decor", icon: HUD.axe },
+    { id: "friends", label: "Friends", icon: HUD.share },
   ];
   return (
-    <nav className="pointer-events-auto absolute inset-x-2 bottom-2 z-20 mx-auto max-w-xl border-[4px] border-[#6b3e1f] bg-[#e8c48a] p-1.5 shadow-[inset_2px_2px_0_#f5deb0,inset_-2px_-2px_0_#a86f3a,4px_4px_0_#3a2414] md:inset-x-auto">
+    <nav
+      className="pointer-events-auto absolute inset-x-2 bottom-2 z-20 mx-auto max-w-xl p-2 md:inset-x-auto"
+      style={{
+        backgroundImage: `url(${HUD.panel})`,
+        backgroundSize: "100% 100%",
+        imageRendering: "pixelated",
+      }}
+    >
       <ul className="flex items-center justify-between gap-0.5">
-        {tabs.map((t) => (
-          <li key={t.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(t.id)}
-              className={`flex w-[52px] cursor-pointer flex-col items-center border-[3px] px-0.5 py-1 text-[8px] font-[family-name:var(--font-pixel)] ${
-                active === t.id
-                  ? "border-[#1a5c30] bg-[#9dffb8] text-[#1a1008]"
-                  : "border-transparent text-[#4a1e0c]/80"
-              }`}
-            >
-              <ArtIcon src={t.icon} alt="" className="mb-0.5 h-7 w-7" />
-              {t.label}
-            </button>
-          </li>
-        ))}
+        {tabs.map((t) => {
+          const selected = active === t.id;
+          return (
+            <li key={t.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(t.id)}
+                className="relative flex w-[52px] cursor-pointer flex-col items-center px-0.5 py-1 text-[8px] font-[family-name:var(--font-pixel)] text-[#1a1008]"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={selected ? HUD.navFrameSelected : HUD.navFrame}
+                  alt=""
+                  className="mb-0.5 h-10 w-10 object-fill [image-rendering:pixelated]"
+                  draggable={false}
+                />
+                <span className="absolute top-1.5 flex h-7 w-7 items-center justify-center">
+                  <ArtIcon src={t.icon} alt="" className="h-6 w-6" />
+                </span>
+                {t.label}
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
@@ -199,7 +225,7 @@ export function QuestTicket({ text, progress }: { text: string; progress: string
   return (
     <div className={`${panel} absolute bottom-24 left-3 z-20 max-w-[210px] p-2.5 md:left-4`}>
       <div className="flex items-start gap-2">
-        <ArtIcon src="/assets/icons/almanac.png" alt="" className="h-7 w-7" />
+        <ArtIcon src={HUD.bag} alt="" className="h-7 w-7" />
         <div>
           <p className={`text-[9px] leading-snug ${ink}`}>{text}</p>
           <p className={`mt-1 text-[10px] tabular-nums text-[#1a5c30]`}>{progress}</p>
@@ -216,18 +242,35 @@ export function ShortcutIcons({
   onRewards: () => void;
   onLeaderboard: () => void;
 }) {
-  const item = `${panel} flex w-14 cursor-pointer flex-col items-center gap-1 p-1.5 text-[8px] ${ink} hover:brightness-110`;
+  const item =
+    "relative flex w-14 cursor-pointer flex-col items-center gap-0.5 p-1 text-[8px] font-[family-name:var(--font-pixel)] text-[#1a1008] hover:brightness-110";
   return (
     <div className="absolute right-3 top-[9.5rem] z-20 flex flex-col gap-2 md:right-4">
       <button type="button" className={item} onClick={onRewards}>
-        <span className="relative">
-          <ArtIcon src="/assets/icons/rewards.png" alt="" className="h-7 w-7" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={HUD.navFrame}
+          alt=""
+          className="h-12 w-12 object-fill [image-rendering:pixelated]"
+          draggable={false}
+        />
+        <span className="absolute top-2.5 flex h-7 w-7 items-center justify-center">
+          <ArtIcon src={HUD.silo} alt="" className="h-7 w-7" />
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 border border-[#3a2414] bg-[#ff4d4d]" />
         </span>
         Premios
       </button>
       <button type="button" className={item} onClick={onLeaderboard}>
-        <ArtIcon src="/assets/icons/ranks.png" alt="" className="h-7 w-7" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={HUD.navFrame}
+          alt=""
+          className="h-12 w-12 object-fill [image-rendering:pixelated]"
+          draggable={false}
+        />
+        <span className="absolute top-2.5">
+          <ArtIcon src={HUD.medal} alt="" className="h-7 w-7" />
+        </span>
         Ranking
       </button>
     </div>
