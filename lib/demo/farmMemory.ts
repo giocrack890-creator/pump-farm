@@ -3,6 +3,7 @@
  */
 
 import { randomBytes } from "crypto";
+import { soilCells } from "@/game/farmLayout";
 import { STARTER_PLOTS, DAILY_HYPE_ALLOWANCE } from "@/lib/game/config";
 import {
   getPlotStatus,
@@ -76,11 +77,31 @@ type DemoWallet = {
   decor: DecorPlacement[];
 };
 
-const g = globalThis as unknown as { __pumpFarmDemo?: DemoWallet };
+const g = globalThis as unknown as { __pumpFarmDemoStardew?: DemoWallet };
 
 function freshPlots(size = 3): DemoPlot[] {
+  const soils = soilCells();
   const plots: DemoPlot[] = [];
   let index = 0;
+  // Prefer hand-authored soil cells; fall back to size×size grid
+  if (soils.length >= size * size) {
+    for (let i = 0; i < size * size; i++) {
+      const cell = soils[i]!;
+      plots.push({
+        id: `demo-plot-${index}`,
+        index,
+        gridX: cell.gridX,
+        gridY: cell.gridY,
+        seedTier: null,
+        plantedAt: null,
+        maturesAt: null,
+        harvestedAt: null,
+        status: "empty",
+      });
+      index += 1;
+    }
+    return plots;
+  }
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       plots.push({
@@ -101,8 +122,8 @@ function freshPlots(size = 3): DemoPlot[] {
 }
 
 export function getDemoWallet(): DemoWallet {
-  if (!g.__pumpFarmDemo) {
-    g.__pumpFarmDemo = {
+  if (!g.__pumpFarmDemoStardew) {
+    g.__pumpFarmDemoStardew = {
       address: DEMO_ADDRESS,
       hypeBalance: 500,
       harvestStreak: 0,
@@ -122,7 +143,7 @@ export function getDemoWallet(): DemoWallet {
     };
   }
   // migrate older demo sessions
-  const w = g.__pumpFarmDemo;
+  const w = g.__pumpFarmDemoStardew;
   if (!w.farmers) w.farmers = [];
   if (w.scoutReadyAt == null) w.scoutReadyAt = 0;
   if (w.pendingScout === undefined) w.pendingScout = null;
