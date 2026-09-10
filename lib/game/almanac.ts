@@ -26,7 +26,7 @@ export const ALMANAC_EXTRA: AlmanacEntryDef[] = [
   {
     key: "building_barn",
     title: "Neon Exchange Barn",
-    art: "/assets/sprites/buildings/barn.png",
-    flavor: "Where candles go to compound.",
+    art: "/assets/sprites/farming-sim/objects/barn.png",
+    flavor: "Red barn from the VectoRaith farming pack.",
   },
 ];

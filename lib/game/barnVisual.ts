@@ -1,4 +1,6 @@
-/** Farm Level visual milestones for the main exchange building. */
+/** Farm Level visual milestones for the main exchange building.
+ * Pack ships a single farmhouse — tiers are tint/label only (see MANIFEST.md).
+ */
 export type BarnVisual = 1 | 5 | 10 | 15 | 20;
 
 export function barnVisualFromLevel(level: number): BarnVisual {
@@ -9,14 +11,14 @@ export function barnVisualFromLevel(level: number): BarnVisual {
   return 1;
 }
 
-export function barnTextureKey(level: number): string {
-  return `building_barn_l${barnVisualFromLevel(level)}`;
+export function barnTextureKey(_level: number): string {
+  return "farmhouse";
 }
 
 export const BARN_MILESTONE_LABELS: Record<BarnVisual, string> = {
-  1: "Starter Exchange",
-  5: "Flagship Shed",
-  10: "Neon Barn",
-  15: "Bull Market Hall",
-  20: "Ticker Tower",
+  1: "Starter Farmhouse",
+  5: "Settled Homestead",
+  10: "Working Farm",
+  15: "Established Estate",
+  20: "Legacy Farm",
 };

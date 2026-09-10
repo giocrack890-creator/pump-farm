@@ -1,24 +1,22 @@
-/** Stardew Valley–style orthogonal pixel grid. */
+/** Orthogonal top-down grid helpers — VectoRaith 32×32 pack. */
 
-export const TILE_SIZE = 16;
-export const PIXEL_SCALE = 4;
-/** On-screen tile size (integer scale only). */
-export const TILE_SCREEN = TILE_SIZE * PIXEL_SCALE;
+export const TILE_SIZE = 32;
 
-export function gridToScreen(gridX: number, gridY: number) {
+/** Integer camera zoom only (pixelArt). */
+export function integerZoom(viewW: number, viewH: number, mapW: number, mapH: number): number {
+  const zx = viewW / mapW;
+  const zy = viewH / mapH;
+  const z = Math.min(zx, zy);
+  return Math.max(1, Math.floor(z));
+}
+
+export function gridToScreen(gridX: number, gridY: number): { x: number; y: number } {
   return {
-    x: gridX * TILE_SCREEN,
-    y: gridY * TILE_SCREEN,
+    x: gridX * TILE_SIZE + TILE_SIZE / 2,
+    y: gridY * TILE_SIZE + TILE_SIZE / 2,
   };
 }
 
-export function screenToGrid(screenX: number, screenY: number) {
-  return {
-    gridX: Math.floor(screenX / TILE_SCREEN),
-    gridY: Math.floor(screenY / TILE_SCREEN),
-  };
-}
-
-export function depthFromY(screenY: number, layer = 0) {
-  return screenY + layer;
+export function depthFromY(y: number, extra = 0): number {
+  return y + extra;
 }

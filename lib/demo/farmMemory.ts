@@ -77,7 +77,7 @@ type DemoWallet = {
   decor: DecorPlacement[];
 };
 
-const g = globalThis as unknown as { __pumpFarmDemoStardew?: DemoWallet };
+const g = globalThis as unknown as { __pumpFarmDemoV9?: DemoWallet };
 
 function freshPlots(size = 3): DemoPlot[] {
   const soils = soilCells();
@@ -122,8 +122,8 @@ function freshPlots(size = 3): DemoPlot[] {
 }
 
 export function getDemoWallet(): DemoWallet {
-  if (!g.__pumpFarmDemoStardew) {
-    g.__pumpFarmDemoStardew = {
+  if (!g.__pumpFarmDemoV9) {
+    g.__pumpFarmDemoV9 = {
       address: DEMO_ADDRESS,
       hypeBalance: 500,
       harvestStreak: 0,
@@ -143,7 +143,7 @@ export function getDemoWallet(): DemoWallet {
     };
   }
   // migrate older demo sessions
-  const w = g.__pumpFarmDemoStardew;
+  const w = g.__pumpFarmDemoV9;
   if (!w.farmers) w.farmers = [];
   if (w.scoutReadyAt == null) w.scoutReadyAt = 0;
   if (w.pendingScout === undefined) w.pendingScout = null;

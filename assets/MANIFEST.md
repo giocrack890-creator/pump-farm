@@ -1,18 +1,32 @@
-# Asset Manifest — Pump Farm (Stardew Valley–style rebuild)
+# Asset Manifest — Pump Farm v9
 
-## Engine
-Orthogonal **top-down pixel** farm (not isometric).
+## Pack (authoritative world art)
 
-| Constant | Value |
-|----------|--------|
-| `TILE_SIZE` | 16 |
-| `PIXEL_SCALE` | 4 |
-| `TILE_SCREEN` | 64 |
+| Field | Value |
+|-------|--------|
+| Name | RPG Asset: Farming Sim Asset Pack |
+| Author | VectoRaith |
+| Source | itch.io (name-your-own-price) |
+| License | Commercial use permitted; no resale/redistribution of the pack; not for NFT / AI-training use |
+| Chosen tile size | **32×32 only** (do not mix 16 / 48 in `/play`) |
+| Season default | **Spring** terrain + summer green tree accents |
+| In-repo path | `assets/sprites/farming-sim/32x32/` (source) → served from `public/assets/sprites/farming-sim/` |
 
-Textures for ground, crops, props, and barn tiers are **baked at runtime** in Phaser (`game/FarmScene.ts` → `bakePixelTextures`) so the look stays consistent Stardew-adjacent wood/grass/soil without relying on the old Kenney isometric pack for the playfield.
+## What we use
 
-## HUD
-Stardew wood / parchment chrome remains in `components/hud/*`.
+- **Terrain:** `Tilesets (Compact)/…terrain_spring_expanded_32x32.png` → `public/.../tiles/terrain_spring.png`
+- **Buildings:** cropped from compact buildings sheet → `objects/farmhouse.png`, `barn.png`, `silo.png`
+- **Crops (launch 4):** turnip-like → Basic; carrot-like → Hybrid; golden grain → Golden; orange vine fruit → Mythic — frames under `crops/{tier}/0..3.png`
+- **Animals:** `$chicken_hen_32x32.png` frame → companions
+- **Trees:** summer green tree from details sheet → `objects/tree.png`
+- **Map:** Tiled JSON `public/assets/maps/starter_farm.json` (orthogonal), loaded via Phaser `tilemapTiledJSON`
 
-## Prior iso pack
-Kenney Isometric Miniature Farm assets may still exist under `public/assets/sprites/` for landing/UI leftovers; the live `/play` scene no longer places them on an iso grid.
+## Known gaps / notes
+
+- Starter layout **omits fences and ponds** by design (composition uses dirt path + tilled soil edge). The pack *does* include fence/water tiles for a later licensed polish pass — do **not** invent replacements.
+- Pack has **one** farmhouse sprite — Farm Level tiers use light tint / decoration from the same pack, not new generated roofs (documented limitation).
+- **Zero** AI-generated or code-baked world art in `/play`. If a texture key is missing, FarmScene fails loudly on-screen.
+
+## HUD palette (sampled from pack)
+
+Warm earth browns (`#5c3a1e`, `#c9a46a`), spring grass (`#7bb85c`), parchment (`#efe0bc`). UI icons may stay as existing small HUD icons; environment art must stay pack-only.

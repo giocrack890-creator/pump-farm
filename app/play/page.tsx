@@ -383,7 +383,7 @@ export default function PlayPage() {
             Enter the farm
           </h1>
           <p className="text-sm text-[#6b3e1f]">
-            Tap Play demo to jump straight into the isometric farm — no wallet needed for the public
+            Tap Play demo to jump straight into the farm — no wallet needed for the public
             demo.
           </p>
           <div className="flex flex-wrap justify-center gap-3">

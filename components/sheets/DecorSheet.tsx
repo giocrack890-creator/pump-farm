@@ -40,8 +40,8 @@ export function DecorSheet({ open, level, hype, placements, onClose, onPlace }: 
               <img
                 src={
                   item.id === "tree"
-                    ? "/assets/sprites/buildings/tree.png"
-                    : `/assets/sprites/props/${item.id === "sign" ? "sign" : item.id}.png`
+                    ? "/assets/sprites/farming-sim/objects/tree.png"
+                    : `/assets/sprites/props/${item.id}.png`
                 }
                 alt=""
                 className="h-12 w-12 object-contain [image-rendering:pixelated]"

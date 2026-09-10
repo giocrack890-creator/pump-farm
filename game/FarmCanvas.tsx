@@ -61,7 +61,7 @@ export function FarmCanvas(props: Props) {
         parent: hostRef.current,
         width: w,
         height: h,
-        backgroundColor: "#87ceeb",
+        backgroundColor: "#7bb85c",
         scene: [scene],
         pixelArt: true,
         antialias: false,

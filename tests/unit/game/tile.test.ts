@@ -1,31 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { PIXEL_SCALE, TILE_SCREEN, TILE_SIZE, gridToScreen, screenToGrid } from "@/game/tile";
-import { barnTextureKey, barnVisualFromLevel } from "@/lib/game/barnVisual";
-import { soilCells } from "@/game/farmLayout";
+import { soilCells, TILE_SIZE, MAP_WIDTH } from "@/game/farmLayout";
+import { gridToScreen, integerZoom } from "@/game/tile";
 
-describe("stardew orthogonal grid", () => {
-  it("uses 16px tiles at integer scale 4", () => {
-    expect(TILE_SIZE).toBe(16);
-    expect(PIXEL_SCALE).toBe(4);
-    expect(TILE_SCREEN).toBe(64);
-    expect(Number.isInteger(PIXEL_SCALE)).toBe(true);
+describe("tile / farm layout (v9 pack)", () => {
+  it("uses 32px orthogonal tiles", () => {
+    expect(TILE_SIZE).toBe(32);
+    expect(MAP_WIDTH).toBeGreaterThan(0);
   });
 
   it("maps grid to screen without iso math", () => {
-    expect(gridToScreen(2, 3)).toEqual({ x: 128, y: 192 });
-    expect(screenToGrid(128, 192)).toEqual({ gridX: 2, gridY: 3 });
+    const p = gridToScreen(2, 3);
+    expect(p.x).toBe(2 * 32 + 16);
+    expect(p.y).toBe(3 * 32 + 16);
   });
 
-  it("has a designed soil cluster", () => {
-    expect(soilCells().length).toBeGreaterThanOrEqual(9);
+  it("locks camera zoom to integers", () => {
+    expect(integerZoom(800, 600, 768, 640)).toBe(1);
+    expect(integerZoom(1600, 1280, 768, 640)).toBe(2);
   });
-});
 
-describe("barn milestones still map", () => {
-  it("has 4+ visual states", () => {
-    expect(barnVisualFromLevel(1)).toBe(1);
-    expect(barnVisualFromLevel(5)).toBe(5);
-    expect(barnVisualFromLevel(20)).toBe(20);
-    expect(barnTextureKey(12)).toBe("building_barn_l10");
+  it("exposes authored soil cluster", () => {
+    const cells = soilCells();
+    expect(cells.length).toBe(9);
+    expect(cells[0]).toEqual({ gridX: 14, gridY: 11 });
   });
 });

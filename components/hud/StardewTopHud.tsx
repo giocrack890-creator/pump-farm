@@ -5,12 +5,12 @@ import { formatNumber } from "@/lib/utils";
 import { useXpBar } from "@/store/usePlayerStore";
 import { nextUnlockLabel } from "@/lib/game/xp";
 
-/** Stardew Valley–style beveled wood HUD chrome. */
-const wood =
-  "pointer-events-auto border-[4px] border-[#6b3e1f] bg-[#e8c48a] shadow-[inset_2px_2px_0_#f5deb0,inset_-2px_-2px_0_#a86f3a,4px_4px_0_#3a2414] [image-rendering:pixelated]";
-const parchment =
-  "border-[3px] border-[#8b5a2b] bg-[#f6e6c4] shadow-[inset_1px_1px_0_#fff8e0]";
-const ink = "font-[family-name:var(--font-pixel)] text-[#4a1e0c]";
+import { hudInk, hudPanel, hudPanelInset } from "@/components/hud/hudChrome";
+
+/** HUD chrome — VectoRaith pack earth palette. */
+const wood = `pointer-events-auto ${hudPanel}`;
+const parchment = hudPanelInset;
+const ink = hudInk;
 const inkRed = "font-[family-name:var(--font-pixel)] text-[#8b1e1e]";
 
 function ArtIcon({ src, alt, className }: { src: string; alt: string; className?: string }) {
@@ -82,7 +82,7 @@ export function StardewTopHud({
       {/* Left: farmer + XP (Stardew inventory-adjacent plaque) */}
       <div className={`${wood} flex max-w-[220px] items-center gap-2 p-2`}>
         <div className={`relative flex h-14 w-14 items-center justify-center ${parchment}`}>
-          <ArtIcon src="/assets/sprites/companions/pet.png" alt="" className="h-11 w-11" />
+          <ArtIcon src="/assets/sprites/companions/farmer.png" alt="" className="h-11 w-11" />
           <span
             className={`absolute -bottom-1 left-1/2 -translate-x-1/2 border-2 border-[#6b3e1f] bg-[#ffe08a] px-1 text-[8px] ${ink}`}
           >

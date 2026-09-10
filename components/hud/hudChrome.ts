@@ -1,39 +1,39 @@
-/** Shared in-game HUD chrome — Stardew Valley wood / parchment panels. */
+/** Shared in-game HUD chrome — palette sampled from VectoRaith Farming Sim pack. */
 
 export const hudPanel =
-  "border-[4px] border-[#6b3e1f] bg-[#e8c48a] shadow-[inset_2px_2px_0_#f5deb0,inset_-2px_-2px_0_#a86f3a,4px_4px_0_#3a2414] [image-rendering:pixelated]";
+  "border-[3px] border-[#5c3a1e] bg-[#c9a46a] shadow-[inset_2px_2px_0_#e8d09a,inset_-2px_-2px_0_#8a6238,3px_3px_0_#3a2414] [image-rendering:pixelated]";
 
 export const hudPanelDark =
-  "border-[4px] border-[#5a3218] bg-[#c9965a] shadow-[inset_2px_2px_0_#e8c48a,inset_-2px_-2px_0_#8b5a2b,4px_4px_0_#3a2414] [image-rendering:pixelated]";
+  "border-[3px] border-[#4a2e16] bg-[#a67c45] shadow-[inset_2px_2px_0_#c9a46a,inset_-2px_-2px_0_#6e4a28,3px_3px_0_#3a2414] [image-rendering:pixelated]";
 
 export const hudPanelInset =
-  "border-[3px] border-[#8b5a2b] bg-[#f6e6c4] shadow-[inset_1px_1px_0_#fff8e0]";
+  "border-[2px] border-[#6e4a28] bg-[#efe0bc] shadow-[inset_1px_1px_0_#fff6d8]";
 
-export const hudInk = "font-[family-name:var(--font-pixel)] tracking-tight text-[#4a1e0c]";
+export const hudInk = "font-[family-name:var(--font-pixel)] tracking-tight text-[#3a2414]";
 
-export const hudInkMuted = "text-[#6b3e1f]";
+export const hudInkMuted = "text-[#5c3a1e]";
 
 export const hudInkLight =
-  "font-[family-name:var(--font-pixel)] tracking-tight text-[#4a1e0c]";
+  "font-[family-name:var(--font-pixel)] tracking-tight text-[#3a2414]";
 
-export const hudAccent = "text-[#1a5c30]";
+export const hudAccent = "text-[#3d7a2e]";
 
-export const hudGold = "text-[#8a5a10]";
+export const hudGold = "text-[#9a6a12]";
 
 export const hudBtnPrimary =
-  "cursor-pointer border-[3px] border-[#6b3e1f] bg-[#3dff7a] px-4 py-3 text-sm font-bold text-[#06140c] shadow-[3px_3px_0_#3a2414] disabled:cursor-not-allowed disabled:opacity-40";
+  "cursor-pointer border-[3px] border-[#5c3a1e] bg-[#7bb85c] px-4 py-3 text-sm font-bold text-[#1a2e12] shadow-[3px_3px_0_#3a2414] disabled:cursor-not-allowed disabled:opacity-40";
 
 export const hudBtnSecondary =
-  "cursor-pointer border-[3px] border-[#6b3e1f] bg-[#ffe08a] px-4 py-3 text-sm font-bold text-[#4a1e0c] shadow-[3px_3px_0_#3a2414]";
+  "cursor-pointer border-[3px] border-[#5c3a1e] bg-[#efe0bc] px-4 py-3 text-sm font-bold text-[#3a2414] shadow-[3px_3px_0_#3a2414]";
 
 export const hudInput =
-  "w-full border-[3px] border-[#8b5a2b] bg-[#f6e6c4] px-3 py-2 text-sm text-[#4a1e0c] outline-none placeholder:text-[#6b3e1f]/50";
+  "w-full border-[2px] border-[#6e4a28] bg-[#efe0bc] px-3 py-2 text-sm text-[#3a2414] outline-none placeholder:text-[#5c3a1e]/50";
 
 export const hudCardActive =
-  "border-[3px] border-[#1a5c30] bg-[#f6e6c4] shadow-[3px_3px_0_#3a2414]";
+  "border-[3px] border-[#3d7a2e] bg-[#efe0bc] shadow-[3px_3px_0_#3a2414]";
 
 export const hudCardIdle =
-  "border-[3px] border-[#8b5a2b] bg-[#efe0bc] shadow-[3px_3px_0_#3a2414] hover:brightness-105";
+  "border-[3px] border-[#6e4a28] bg-[#e6d4a8] shadow-[3px_3px_0_#3a2414] hover:brightness-105";
 
 export const hudCardLocked =
-  "border-[3px] border-[#8b5a2b]/50 bg-[#efe0bc]/60 opacity-70";
+  "border-[3px] border-[#6e4a28]/50 bg-[#e6d4a8]/60 opacity-70";

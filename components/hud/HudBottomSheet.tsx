@@ -3,10 +3,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
 
-const wood =
-  "border-[4px] border-[#6b3e1f] bg-[#e8c48a] shadow-[inset_2px_2px_0_#f5deb0,inset_-2px_-2px_0_#a86f3a,4px_4px_0_#3a2414]";
-const ink = "font-[family-name:var(--font-pixel)] tracking-tight text-[#4a1e0c]";
-const inkMuted = "text-[#6b3e1f]";
+import { hudInk, hudInkMuted, hudPanel } from "@/components/hud/hudChrome";
+
+const wood = hudPanel;
+const ink = hudInk;
+const inkMuted = hudInkMuted;
 
 export function HudBottomSheet({
   open,

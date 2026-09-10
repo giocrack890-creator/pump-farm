@@ -1,0 +1,1 @@
+Pack root (local): vectoraith_tileset_farming_sim_essentials — we use Original/32x32 only in-game.

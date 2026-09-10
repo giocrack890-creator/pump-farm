@@ -48,16 +48,16 @@ export const DECOR_ITEMS: Record<DecorItemId, DecorItem> = {
   },
 };
 
-/** Fixed edge slots — props accumulate here as the player buys Decor. */
+/** Fixed edge slots on the Tiled starter map (tile coords). */
 export const DECOR_SLOTS: { gridX: number; gridY: number }[] = [
-  { gridX: -2, gridY: 0 },
-  { gridX: -2, gridY: 2 },
-  { gridX: 4, gridY: -1 },
-  { gridX: 5, gridY: 1 },
-  { gridX: 3, gridY: 4 },
-  { gridX: -1, gridY: 4 },
-  { gridX: 6, gridY: 3 },
-  { gridX: 0, gridY: -3 },
+  { gridX: 2, gridY: 16 },
+  { gridX: 4, gridY: 17 },
+  { gridX: 20, gridY: 16 },
+  { gridX: 18, gridY: 17 },
+  { gridX: 1, gridY: 10 },
+  { gridX: 22, gridY: 10 },
+  { gridX: 7, gridY: 15 },
+  { gridX: 19, gridY: 14 },
 ];
 
 export type DecorPlacement = {
