@@ -11,6 +11,7 @@ import {
   LevelUpOverlay,
 } from "@/components/hud/GameHud";
 import { StardewTopHud } from "@/components/hud/StardewTopHud";
+import { PoolHudChip } from "@/components/hud/PoolHudChip";
 import {
   TutorialOverlay,
   type TutorialStepId,
@@ -459,6 +460,12 @@ export default function PlayPage() {
           setPanel("rewards");
         }}
         onLeaderboard={() => setPanel("ranks")}
+      />
+      <PoolHudChip
+        onOpen={() => {
+          if (tutorialStep === "silo") setTutorialStep("nav");
+          setPanel("rewards");
+        }}
       />
       <QuestTicket
         text="Harvest 3 crops today"
