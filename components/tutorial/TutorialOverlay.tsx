@@ -34,50 +34,50 @@ const COPY: Record<
   { title: string; body: string; cta?: string; showInstant?: boolean; spotlight?: string }
 > = {
   welcome: {
-    title: "Welcome to Pump Farm",
-    body: "Plant seeds, grow your farm, earn real $FARM from Season Points and the Silo.",
-    cta: "Let's farm",
+    title: "Bienvenido a Pump Farm",
+    body: "Plantá, cosechá y ganá SP. Al final de la Season, tus SP te dan una parte del pozo de premios.",
+    cta: "Vamos",
   },
   "tap-plot": {
-    title: "Plant your first seed",
-    body: "Tap an empty soil plot on your farm (green ring).",
+    title: "Plantá tu primera semilla",
+    body: "Tocá un plot vacío (anillo verde) en tu granja.",
   },
   "pick-seed": {
-    title: "Pick a seed",
-    body: "Choose Basic — free-tier and unlocked right away.",
+    title: "Elegí una semilla",
+    body: "Empezá con Turnip (Basic) — desbloqueada desde el nivel 1.",
   },
   growth: {
-    title: "Crops grow in real time",
-    body: "Come back later — or instant-grow this one for the tutorial only.",
-    cta: "Continue",
+    title: "Los cultivos crecen en tiempo real",
+    body: "Volvé más tarde — o acelerá este solo para el tutorial.",
+    cta: "Seguir",
     showInstant: true,
   },
   harvest: {
-    title: "Harvest!",
-    body: "Tap the glowing ready crop. Watch Season Points tick up.",
+    title: "¡Cosechá!",
+    body: "Tocá el cultivo listo. Sumás Season Points (SP).",
   },
   xp: {
     title: "Farm Level",
-    body: "Every harvest grows Farm Level — unlocking better seeds, land, and a fancier Exchange.",
-    cta: "Got it",
+    body: "Cada cosecha sube tu nivel: mejores semillas, más tierra y mejoras en la granja.",
+    cta: "Entendido",
     spotlight: "xp",
   },
   silo: {
-    title: "The Silo",
-    body: "Rewards hold real $FARM from trading fees. Biggest farms each Season get paid.",
-    cta: "Nice",
+    title: "Premios (el Silo)",
+    body: "El Silo es el pozo de la Season. Más SP = más parte del bote cuando cierra. Abrilo con Premios.",
+    cta: "Ok",
     spotlight: "silo",
   },
   nav: {
-    title: "Your tools",
-    body: "Silo · Shop · Hire · Almanac · Decor · Friends — bottom bar anytime.",
-    cta: "Finish tutorial",
+    title: "Tus herramientas",
+    body: "Premios · Shop · Hire · Almanac · Decor · Friends — barra de abajo.",
+    cta: "Terminar tutorial",
     spotlight: "nav",
   },
   done: {
-    title: "You're ready",
-    body: "Replay anytime from Menu. Grow green candles.",
-    cta: "Start farming",
+    title: "Listo",
+    body: "Podés repetir el tutorial desde el Menú. A cosechar.",
+    cta: "A la granja",
   },
 };
 
