@@ -8,6 +8,8 @@
  * check by hand: a pot that looks wrong on the page is either this figure or
  * the split, and this tells you which.
  */
+// Must come first: it populates process.env before any module reads it.
+import "./env.mts";
 import { formatEther } from "viem";
 import { resolveLaunch } from "../lib/pons/launch";
 import {

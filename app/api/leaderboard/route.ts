@@ -70,6 +70,7 @@ export async function GET(request: Request) {
   if (scope === "alltime") {
     const grouped = await prisma.seasonPoint.groupBy({
       by: ["walletId"],
+      where: { wallet: { flaggedSybil: false } },
       _sum: { points: true },
       orderBy: { _sum: { points: "desc" } },
       take: limit,
@@ -112,7 +113,13 @@ export async function GET(request: Request) {
   const season = (await findActiveSeason(now)) ?? (await ensureCurrentSeason(now));
 
   const rows = await prisma.seasonPoint.findMany({
-    where: { seasonId: season.id, points: { gt: 0 } },
+    // A flagged wallet is paid nothing, so ranking it above farmers who are
+    // paid says the board and the payout disagree. It stays out of both.
+    where: {
+      seasonId: season.id,
+      points: { gt: 0 },
+      wallet: { flaggedSybil: false },
+    },
     orderBy: { points: "desc" },
     take: limit,
     include: {

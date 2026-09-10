@@ -8,6 +8,8 @@
  * computation the close performs — running it first is how you check a season
  * before it settles.
  */
+// Must come first: it populates process.env before any module reads it.
+import "./env.mts";
 import { closeSeason } from "../lib/game/closeSeason";
 import { prisma } from "../lib/prisma";
 

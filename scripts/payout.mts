@@ -17,6 +17,8 @@
  * the API call afterwards fails, the hash is printed loudly — mark it by hand
  * in /admin rather than re-running, or the farmer is paid twice.
  */
+// Must come first: it populates process.env before any module reads it.
+import "./env.mts";
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import {

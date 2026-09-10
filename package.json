@@ -19,7 +19,8 @@
     "payout": "tsx scripts/payout.mts",
     "payout:list": "tsx scripts/payout.mts --list",
     "season:preview": "tsx scripts/season-preview.mts",
-    "pons:probe": "tsx scripts/pons-probe.mts"
+    "pons:probe": "tsx scripts/pons-probe.mts",
+    "db:seed:local": "tsx scripts/seed-local.mts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

@@ -83,7 +83,9 @@ export default function ProofPage() {
           <CopyAddress address={address} label="Treasury" />
         ) : (
           <p className="text-sm text-white/40">
-            No treasury wallet configured yet.
+            {q.isLoading
+              ? "Reading the treasury…"
+              : "No treasury wallet configured yet."}
           </p>
         )}
       </div>
