@@ -1,7 +1,10 @@
 import type { SIWXSession } from "@reown/appkit";
 import { requireAuth, isAuthError } from "@/lib/auth/verify";
 import { normalizeAuthAddress } from "@/lib/auth/jwt";
-import { SIWX_DOMAIN, SIWX_STATEMENT, SIWX_URI } from "@/lib/auth/siwx-message";
+import {
+  SIWX_STATEMENT,
+  resolveSiwxDomainUri,
+} from "@/lib/auth/siwx-message";
 
 /**
  * Returns a reconstructed SIWX session when the Bearer JWT matches the wallet.
@@ -26,12 +29,14 @@ export async function GET(request: Request) {
     return Response.json({ sessions: [] as SIWXSession[] });
   }
 
+  const { domain, uri } = resolveSiwxDomainUri(request);
+
   const session: SIWXSession = {
     data: {
       accountAddress: auth.address,
       chainId: chainId as SIWXSession["data"]["chainId"],
-      domain: SIWX_DOMAIN,
-      uri: SIWX_URI,
+      domain,
+      uri,
       version: "1",
       nonce: "active-session",
       statement: SIWX_STATEMENT,

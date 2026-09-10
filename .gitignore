@@ -46,3 +46,7 @@ tmp/
 # local extracts
 /tmp/
 .data
+
+# generated social posters (re-run: npm run posters:export)
+/exports/social-posters/*.png
+!/exports/social-posters/.gitkeep

@@ -166,56 +166,96 @@ function CopyCA({ dark = false }: { dark?: boolean }) {
 function StatsRibbon() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
-  const [stats, setStats] = useState({
-    seedsPlantedToday: 1842,
-    siloUsd: 12450,
-    activeFarmers: 936,
-    seasonEndsIn: { days: 4, hours: 11 },
+  const [stats, setStats] = useState<{
+    seedsPlantedToday: number | null;
+    siloUsd: number | null;
+    activeFarmers: number | null;
+    seasonEndsIn: { days: number; hours: number } | null;
+    mock: boolean;
+    loaded: boolean;
+  }>({
+    seedsPlantedToday: null,
+    siloUsd: null,
+    activeFarmers: null,
+    seasonEndsIn: null,
+    mock: true,
+    loaded: false,
   });
 
   useEffect(() => {
     void fetch("/api/stats/public")
       .then((r) => r.json())
       .then((d) => {
-        if (d?.seedsPlantedToday != null) {
-          setStats({
-            seedsPlantedToday: Number(d.seedsPlantedToday),
-            siloUsd: Number(d.siloUsd),
-            activeFarmers: Number(d.activeFarmers),
-            seasonEndsIn: d.seasonEndsIn ?? { days: 4, hours: 11 },
-          });
-        }
+        setStats({
+          seedsPlantedToday:
+            typeof d?.seedsPlantedToday === "number" ? d.seedsPlantedToday : null,
+          siloUsd: typeof d?.siloUsd === "number" ? d.siloUsd : null,
+          activeFarmers:
+            typeof d?.activeFarmers === "number" ? d.activeFarmers : null,
+          seasonEndsIn:
+            d?.seasonEndsIn &&
+            typeof d.seasonEndsIn.days === "number" &&
+            typeof d.seasonEndsIn.hours === "number"
+              ? d.seasonEndsIn
+              : null,
+          mock: Boolean(d?.mock),
+          loaded: true,
+        });
       })
-      .catch(() => undefined);
+      .catch(() => {
+        setStats((s) => ({ ...s, loaded: true, mock: true }));
+      });
   }, []);
 
-  const seeds = useCountUp(stats.seedsPlantedToday, inView);
-  const silo = useCountUp(stats.siloUsd, inView);
-  const farmers = useCountUp(stats.activeFarmers, inView);
+  const seedsTarget = stats.seedsPlantedToday ?? 0;
+  const siloTarget = stats.siloUsd ?? 0;
+  const farmersTarget = stats.activeFarmers ?? 0;
+  const seeds = useCountUp(seedsTarget, inView && stats.seedsPlantedToday != null);
+  const silo = useCountUp(siloTarget, inView && stats.siloUsd != null);
+  const farmers = useCountUp(farmersTarget, inView && stats.activeFarmers != null);
 
   const items = [
     {
       label: "seeds planted today",
-      value: seeds.toLocaleString(),
+      value:
+        stats.seedsPlantedToday != null
+          ? seeds.toLocaleString()
+          : stats.loaded
+            ? "—"
+            : "…",
       icon: "/assets/sprites/crops/basic_3.png",
       pill: "bg-[#3DFF7A]/15 border-[#3DFF7A]/35 text-[#3DFF7A]",
     },
     {
       label: "in the Silo",
-      value: `$${silo.toLocaleString()}`,
+      value:
+        stats.siloUsd != null
+          ? `$${silo.toLocaleString()}`
+          : stats.loaded
+            ? "—"
+            : "…",
       icon: "/assets/icons/rewards.png",
       pill: "bg-[#FFC94D]/15 border-[#FFC94D]/35 text-[#FFC94D]",
-      spark: true,
+      spark: stats.siloUsd != null,
     },
     {
       label: "active farmers",
-      value: farmers.toLocaleString(),
+      value:
+        stats.activeFarmers != null
+          ? farmers.toLocaleString()
+          : stats.loaded
+            ? "—"
+            : "…",
       icon: "/assets/icons/companion.png",
       pill: "bg-[#9bb4ff]/15 border-[#9bb4ff]/35 text-[#9bb4ff]",
     },
     {
       label: "season ends in",
-      value: `${stats.seasonEndsIn.days}d ${stats.seasonEndsIn.hours}h`,
+      value: stats.seasonEndsIn
+        ? `${stats.seasonEndsIn.days}d ${stats.seasonEndsIn.hours}h`
+        : stats.loaded
+          ? "—"
+          : "…",
       icon: "/assets/icons/ranks.png",
       pill: "bg-[#c4b5fd]/15 border-[#c4b5fd]/35 text-[#c4b5fd]",
     },

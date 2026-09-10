@@ -34,10 +34,13 @@ export async function GET() {
   }
 
   const treasury = await fetchTreasurySnapshot();
-  const siloBalance = Number(treasury.displayBalance ?? 0);
-  const siloTarget = SILO_TARGET_ETH;
-  const percentFull = Math.min(100, Math.max(0, (siloBalance / siloTarget) * 100));
+  // Real on-chain balance only — never MOCK_TREASURY_ETH display stand-in
   const liveTreasury = treasury.balanceEth != null && !isDemoDbMode();
+  const siloBalance = liveTreasury ? Number(treasury.balanceEth) : 0;
+  const siloTarget = SILO_TARGET_ETH;
+  const percentFull = liveTreasury
+    ? Math.min(100, Math.max(0, (siloBalance / siloTarget) * 100))
+    : 0;
 
   return Response.json({
     ticker: TOKEN_TICKER,

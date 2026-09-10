@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   PAYOUT_TIER_1_SHARE,
@@ -25,29 +25,82 @@ type SeasonCurrent = {
 
 type PublicStats = {
   activeFarmers?: number;
+  marketCap?: number | null;
+  priceUsd?: number | null;
+  volume24h?: number | null;
+  priceChange24h?: number | null;
+  feedSymbol?: string | null;
+  feedProxy?: boolean;
+  pairUrl?: string | null;
   mock?: boolean;
 };
 
-/** Deterministic sample series for the pre-launch chart. */
-function sampleSeries(seed = 7, n = 28) {
-  const pts: number[] = [];
-  let v = 0.00042;
-  let s = seed;
-  for (let i = 0; i < n; i++) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const wobble = ((s % 1000) / 1000 - 0.45) * 0.08;
-    v = Math.max(0.0001, v * (1 + wobble));
-    pts.push(v);
+type PriceApi = {
+  priceUsd: number;
+  priceChange24h: number;
+  volume24h: number;
+  marketCap: number | null;
+  symbol: string | null;
+  pairUrl?: string;
+  proxy: boolean;
+  source: "dexscreener" | "mock";
+  fetchedAt: string;
+};
+
+const SPARK_KEY = "pf_live_spark_v1";
+const SPARK_MAX = 36;
+
+function readSpark(): number[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem(SPARK_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as number[];
+    return Array.isArray(parsed) ? parsed.filter((n) => Number.isFinite(n)) : [];
+  } catch {
+    return [];
   }
-  return pts;
 }
 
-function SampleChart({ series }: { series: number[] }) {
+function writeSpark(pts: number[]) {
+  try {
+    sessionStorage.setItem(SPARK_KEY, JSON.stringify(pts.slice(-SPARK_MAX)));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Literal USD market cap → millions style ($1.2M / $12M), never unit price. */
+function formatMarketCap(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n) || n <= 0) return "—";
+  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(2)}B`;
+  if (n >= 10_000_000) return `$${(n / 1_000_000).toFixed(0)}M`;
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  // Sub-$1M caps still expressed in millions (e.g. $0.85M)
+  if (n >= 1_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  return "—";
+}
+
+function formatPrice(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  if (n >= 1) return `$${n.toFixed(4)}`;
+  if (n >= 0.01) return `$${n.toFixed(5)}`;
+  return `$${n.toFixed(6)}`;
+}
+
+function LiveChart({ series }: { series: number[] }) {
   const w = 280;
   const h = 96;
+  if (series.length < 2) {
+    return (
+      <div className="flex h-24 items-center justify-center text-[11px] text-[var(--ink-muted)]">
+        Collecting live ticks…
+      </div>
+    );
+  }
   const min = Math.min(...series);
   const max = Math.max(...series);
-  const span = Math.max(1e-9, max - min);
+  const span = Math.max(1e-12, max - min);
   const d = series
     .map((v, i) => {
       const x = (i / (series.length - 1)) * w;
@@ -55,10 +108,17 @@ function SampleChart({ series }: { series: number[] }) {
       return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
+  const up = series[series.length - 1]! >= series[0]!;
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" role="img" aria-label="Sample price chart">
-      <path d={d} fill="none" stroke="#5c8a3a" strokeWidth="2.5" strokeLinejoin="round" />
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" role="img" aria-label="Live price chart">
+      <path
+        d={d}
+        fill="none"
+        stroke={up ? "#5c8a3a" : "#b54a3a"}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -67,7 +127,13 @@ const RANK_ICONS: PixelIconId[] = ["rank_gold", "rank_silver", "rank_bronze"];
 
 export function LandingSidebar() {
   const mintLive = isTokenMintLive();
-  const series = useMemo(() => sampleSeries(), []);
+  const [spark, setSpark] = useState<number[]>([]);
+  const primed = useRef(false);
+
+  useEffect(() => {
+    setSpark(readSpark());
+    primed.current = true;
+  }, []);
 
   const seasonQ = useQuery({
     queryKey: ["season-current"],
@@ -86,8 +152,31 @@ export function LandingSidebar() {
       if (!res.ok) throw new Error("stats");
       return (await res.json()) as PublicStats;
     },
-    refetchInterval: 60_000,
+    refetchInterval: 15_000,
   });
+
+  const priceQ = useQuery({
+    queryKey: ["token-price"],
+    queryFn: async () => {
+      const res = await fetch("/api/price");
+      if (!res.ok) throw new Error("price");
+      return (await res.json()) as PriceApi;
+    },
+    refetchInterval: 15_000,
+  });
+
+  useEffect(() => {
+    const px = priceQ.data?.priceUsd;
+    if (!primed.current || !px || priceQ.data?.source !== "dexscreener") return;
+    setSpark((prev) => {
+      const last = prev[prev.length - 1];
+      // Skip near-identical ticks to keep the spark readable
+      if (last != null && Math.abs(last - px) / last < 0.00005) return prev;
+      const next = [...prev, px].slice(-SPARK_MAX);
+      writeSpark(next);
+      return next;
+    });
+  }, [priceQ.data?.priceUsd, priceQ.data?.source, priceQ.dataUpdatedAt]);
 
   const silo = seasonQ.data;
   const split = silo?.payoutSplit ?? [
@@ -96,8 +185,33 @@ export function LandingSidebar() {
     { id: "rest", label: "Active rest", share: PAYOUT_TIER_3_SHARE },
   ];
 
-  const last = series[series.length - 1] ?? 0;
+  const live = priceQ.data?.source === "dexscreener" && (priceQ.data.priceUsd ?? 0) > 0;
+  const price = live ? priceQ.data!.priceUsd : null;
+  const change24 = live ? priceQ.data!.priceChange24h : null;
+  // Literal market cap (USD total), never token unit price
+  const mcap = live
+    ? (priceQ.data!.marketCap ?? statsQ.data?.marketCap ?? null)
+    : null;
+  const mcapUsd =
+    mcap != null && Number.isFinite(mcap) && mcap > 1 ? mcap : null;
+  const feedSymbol = live
+    ? (priceQ.data!.symbol ?? statsQ.data?.feedSymbol ?? "TOKEN")
+    : null;
+  const isProxy = Boolean(priceQ.data?.proxy ?? statsQ.data?.feedProxy);
+  const pairUrl = priceQ.data?.pairUrl ?? statsQ.data?.pairUrl ?? null;
   const farmersOnline = statsQ.data?.activeFarmers;
+
+  const changePct = change24 != null ? change24 * 100 : null;
+  const changeLabel =
+    changePct == null
+      ? null
+      : `${changePct >= 0 ? "+" : ""}${changePct.toFixed(2)}%`;
+
+  const chartSeries = useMemo(() => {
+    if (spark.length >= 2) return spark;
+    if (price != null) return [price * 0.998, price];
+    return [];
+  }, [spark, price]);
 
   const copyMint = async () => {
     if (!mintLive) return;
@@ -111,27 +225,57 @@ export function LandingSidebar() {
 
   return (
     <aside className="flex flex-col gap-3">
-      {/* Price — sample until DEX */}
+      {/* Price — live Dexscreener when configured */}
       <div className="pf-card p-4">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-              ${TOKEN_TICKER} price
+              {live && feedSymbol ? `$${feedSymbol} price` : `$${TOKEN_TICKER} price`}
             </p>
             <p className="pf-mono mt-1 text-2xl font-bold text-[var(--ink)]">
-              ${last.toFixed(6)}
+              {live && price != null ? formatPrice(price) : "—"}
             </p>
+            {changeLabel ? (
+              <p
+                className={`mt-1 text-[12px] font-bold ${
+                  (changePct ?? 0) >= 0 ? "text-[var(--green)]" : "text-[#b54a3a]"
+                }`}
+              >
+                {changeLabel}{" "}
+                <span className="font-semibold text-[var(--ink-muted)]">24h</span>
+              </p>
+            ) : null}
           </div>
-          <span className="rounded-full bg-[#efe0bc] px-2 py-1 text-[10px] font-bold text-[var(--wood-mid)]">
-            Sample
+          <span
+            className={`rounded-full px-2 py-1 text-[10px] font-bold ${
+              live
+                ? "bg-[#dff0d0] text-[var(--green)]"
+                : "bg-[#efe0bc] text-[var(--wood-mid)]"
+            }`}
+          >
+            {live ? (isProxy ? `Live · $${feedSymbol} proxy` : "Live") : "Sample"}
           </span>
         </div>
         <div className="mt-3 rounded-lg border border-[var(--rule)] bg-[#fffdf6] p-2">
-          <SampleChart series={series} />
+          <LiveChart series={chartSeries} />
         </div>
         <p className="mt-2 text-[10px] leading-snug text-[var(--ink-muted)]">
-          Sample chart — live feed connects at launch. Not a live quote.
+          {live
+            ? isProxy
+              ? `Live Dexscreener feed for $${feedSymbol} on Robinhood Chain — plumbing test until $${TOKEN_TICKER} launches. Not $${TOKEN_TICKER} price.`
+              : `Live Dexscreener quote · refreshes ~15s.`
+            : `Sample chart — live feed connects at launch. Not a live quote.`}
         </p>
+        {pairUrl ? (
+          <a
+            href={pairUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-block text-[11px] font-bold text-[var(--wood-mid)] underline-offset-2 hover:underline"
+          >
+            View on Dexscreener →
+          </a>
+        ) : null}
       </div>
 
       {/* Silo — real */}
@@ -152,19 +296,23 @@ export function LandingSidebar() {
           </span>
         </div>
         <p className="pf-mono mt-2 text-2xl font-bold text-[var(--green)]">
-          {silo ? formatNumber(silo.siloBalance, 2) : "—"}{" "}
+          {silo?.live ? formatNumber(silo.siloBalance, 2) : "—"}{" "}
           <span className="text-sm font-semibold text-[var(--ink-muted)]">ETH</span>
         </p>
         <p className="mt-1 text-[11px] text-[var(--ink-muted)]">
           Season {silo?.season.number ?? "—"} fee pot ·{" "}
-          {silo
+          {silo?.live
             ? `${formatNumber(silo.percentFull, 1)}% of ${formatNumber(silo.siloTarget, 0)} ETH target`
-            : "loading…"}
+            : silo
+              ? "Live treasury unavailable"
+              : "loading…"}
         </p>
         <div className="pf-progress mt-3" aria-hidden>
           <div
             className="pf-progress-fill"
-            style={{ width: `${Math.min(100, silo?.percentFull ?? 0)}%` }}
+            style={{
+              width: `${Math.min(100, silo?.live ? (silo.percentFull ?? 0) : 0)}%`,
+            }}
           />
         </div>
         <p className="mt-3 text-[11px] font-semibold text-[var(--ink)]">Payout split</p>
@@ -227,13 +375,19 @@ export function LandingSidebar() {
           </div>
         )}
         <a
-          href={mintLive ? `https://dexscreener.com` : "#tokenomics"}
+          href={
+            mintLive
+              ? pairUrl ?? "https://dexscreener.com"
+              : pairUrl ?? "#tokenomics"
+          }
           className={`pf-btn pf-btn-primary mt-3 w-full !rounded-lg ${
-            mintLive ? "" : "pointer-events-none opacity-50"
+            mintLive || pairUrl ? "" : "pointer-events-none opacity-50"
           }`}
-          aria-disabled={!mintLive}
+          target={pairUrl ? "_blank" : undefined}
+          rel={pairUrl ? "noreferrer" : undefined}
+          aria-disabled={!mintLive && !pairUrl}
         >
-          Buy ${TOKEN_TICKER}
+          {mintLive ? `Buy $${TOKEN_TICKER}` : live ? `View $${feedSymbol} chart` : `Buy $${TOKEN_TICKER}`}
         </a>
       </div>
 
@@ -247,23 +401,22 @@ export function LandingSidebar() {
         />
         <StatPill
           label="Mkt cap"
-          value="—"
-          hint="At launch"
+          value={formatMarketCap(mcapUsd)}
+          hint={live ? (isProxy ? `$${feedSymbol} live` : "Live") : "At launch"}
           icon="coin_farm"
+          live={live && mcapUsd != null}
         />
         <StatPill
           label="Farmers"
           value={farmersOnline != null ? formatNumber(farmersOnline, 0) : "—"}
           hint="Online / total"
           icon="status_check"
-          live
+          live={farmersOnline != null}
         />
       </div>
 
       <div className="flex justify-center gap-2 pb-2">
-        {[
-          { href: "https://x.com/PumpFarmer", label: "X" },
-        ].map((s) => (
+        {[{ href: "https://x.com/PumpFarmer", label: "X" }].map((s) => (
           <a
             key={s.label}
             href={s.href}

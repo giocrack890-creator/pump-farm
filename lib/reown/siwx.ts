@@ -18,6 +18,7 @@ export const pumpFarmSIWX: SIWXConfig = {
   getRequired: () => true,
 
   createMessage: async (input: SIWXMessage.Input): Promise<SIWXMessage> => {
+    // Origin is sent automatically; server binds SIWE domain/uri to it (Phantom requirement).
     const res = await fetch("/api/auth/siwx/message", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -31,6 +32,7 @@ export const pumpFarmSIWX: SIWXConfig = {
       throw new Error((err as { error?: string }).error ?? "Failed to create SIWX message");
     }
     const data = (await res.json()) as {
+      accountAddress?: string;
       domain: string;
       uri: string;
       version: string;
@@ -43,6 +45,8 @@ export const pumpFarmSIWX: SIWXConfig = {
 
     return {
       ...input,
+      // Keep checksummed address from server so SIWX data matches signed text.
+      accountAddress: data.accountAddress ?? input.accountAddress,
       domain: data.domain,
       uri: data.uri,
       version: data.version,
@@ -84,7 +88,12 @@ export const pumpFarmSIWX: SIWXConfig = {
     address: string,
   ): Promise<SIWXSession[]> => {
     const { jwt, address: authAddress } = useWalletStore.getState();
-    if (!jwt || !authAddress || authAddress !== address) {
+    // AppKit may pass EIP-55 checksum; JWT stores lowercase — compare case-insensitively.
+    if (
+      !jwt ||
+      !authAddress ||
+      authAddress.toLowerCase() !== address.toLowerCase()
+    ) {
       return [];
     }
     const qs = new URLSearchParams({

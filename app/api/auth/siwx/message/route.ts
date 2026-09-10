@@ -2,10 +2,10 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { isEvmWalletAddress, normalizeEvmAddress } from "@/lib/auth/evm";
 import {
-  SIWX_DOMAIN,
   SIWX_STATEMENT,
-  SIWX_URI,
   buildSiwxMessageText,
+  checksumEvmAddress,
+  resolveSiwxDomainUri,
 } from "@/lib/auth/siwx-message";
 import { canUseAuthDb } from "@/lib/auth/db";
 
@@ -36,15 +36,22 @@ export async function POST(request: Request) {
     return Response.json({ error: "invalid EVM address" }, { status: 400 });
   }
 
+  // DB / JWT use lowercase; SIWE message body must be EIP-55 (Phantom).
   const accountAddress = normalizeEvmAddress(raw);
+  const accountAddressChecksum = checksumEvmAddress(raw);
+  const { domain, uri } = resolveSiwxDomainUri(request);
   const nonce = randomBytes(24).toString("hex");
   const issuedAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + NONCE_TTL_MS);
+  const expirationTime = expiresAt.toISOString();
   const message = buildSiwxMessageText({
-    accountAddress,
+    accountAddress: accountAddressChecksum,
     chainId,
     nonce,
     issuedAt,
+    domain,
+    uri,
+    expirationTime,
   });
 
   if (canUseAuthDb()) {
@@ -59,15 +66,15 @@ export async function POST(request: Request) {
   }
 
   return Response.json({
-    accountAddress,
+    accountAddress: accountAddressChecksum,
     chainId,
-    domain: SIWX_DOMAIN,
-    uri: SIWX_URI,
+    domain,
+    uri,
     version: "1",
     statement: SIWX_STATEMENT,
     nonce,
     issuedAt,
-    expirationTime: expiresAt.toISOString(),
+    expirationTime,
     message,
   });
 }

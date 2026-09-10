@@ -8,6 +8,25 @@ import { pumpFarmSIWX } from "@/lib/reown/siwx";
 export const REOWN_PROJECT_ID =
   process.env.NEXT_PUBLIC_REOWN_PROJECT_ID?.trim() || "";
 
+/** AppKit metadata — prefer live origin so WC/Phantom origin checks align with SIWX. */
+export function getAppMetadata() {
+  const fallback = "https://pump-farm.vercel.app";
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || fallback;
+  return {
+    name: "Pump Farm",
+    description: "Farm $FARM on Robinhood Chain — grow green candles.",
+    url: origin,
+    icons: [
+      `${origin}/icon.png`,
+      `${origin}/assets/landing/logo-pump-farm.png`,
+    ],
+  };
+}
+
+/** @deprecated use getAppMetadata() — kept for any static imports */
 export const APP_METADATA = {
   name: "Pump Farm",
   description: "Farm $FARM on Robinhood Chain — grow green candles.",
@@ -74,9 +93,10 @@ export function getAppKitOptions(): CreateAppKit | null {
     projectId: REOWN_PROJECT_ID,
     networks: APPKIT_NETWORKS,
     defaultNetwork: ACTIVE_CHAIN,
-    metadata: APP_METADATA,
+    metadata: getAppMetadata(),
     siwx: pumpFarmSIWX,
     themeMode: "dark",
+    // EVM-only AppKit — Phantom appears via EIP-6963 as ethereum provider.
     defaultAccountTypes: { eip155: "eoa" },
     featuredWalletIds: [...FEATURED_WALLETS],
     excludeWalletIds: [...EXCLUDE_SOLANA_ONLY_WALLETS],
