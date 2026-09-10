@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const LINKS = [
+  { href: "#why", label: "Why play" },
   { href: "#how", label: "How it works" },
-  { href: "#tokenomics", label: "Tokenomics" },
+  { href: "#tokenomics", label: "Payouts" },
   { href: "#roadmap", label: "Roadmap" },
   { href: "/play", label: "Play" },
   { href: "/docs", label: "Whitepaper" },

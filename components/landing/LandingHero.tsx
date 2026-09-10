@@ -84,9 +84,14 @@ export function LandingHero({
           )}
         </div>
 
-        <p className="mt-4 max-w-lg text-base font-medium leading-relaxed text-[#fff6e4] drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)] sm:text-lg">
-          A cozy on-chain farm. Harvest Season Points. Share the Silo when the Season closes.
-        </p>
+        <div className="mt-5 max-w-xl space-y-2 text-center">
+          <p className="text-lg font-bold leading-snug text-[#fff6e4] drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)] sm:text-xl">
+            You&apos;re not just farming crops. You&apos;re farming the trade fees.
+          </p>
+          <p className="text-sm font-medium leading-relaxed text-[#fff6e4]/85 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)] sm:text-base">
+            A cozy on-chain farm. Harvest Season Points. Share the Silo when the Season closes.
+          </p>
+        </div>
 
         <div className="pf-hero-cta flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
           <Link href="/play" className="pf-btn pf-btn-primary w-full sm:w-auto">

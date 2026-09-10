@@ -63,6 +63,51 @@ export function LandingPage({
       <LandingNav />
       <LandingHero heroSrc={heroSrc} logoSrc={logoSrc} />
 
+      <section
+        id="why"
+        className="scroll-mt-20 border-b border-[var(--rule)] bg-[var(--parchment)]"
+        aria-labelledby="why-play-heading"
+      >
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
+          <p className="pf-display text-[11px] tracking-wide text-[var(--wood-mid)]">WHY PLAY</p>
+          <h2
+            id="why-play-heading"
+            className="mt-1 max-w-2xl text-2xl font-bold leading-snug text-[var(--ink)] sm:text-3xl"
+          >
+            Every trade on ${TOKEN_TICKER} fills a pot. Your rank decides your cut.
+          </h2>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-3">
+            {(
+              [
+                {
+                  icon: "coin_farm" as const,
+                  title: "Trade fees fund it",
+                  body: `Every $${TOKEN_TICKER} trade sends a cut straight into the Silo. Not a promise — an on-chain pot, filling in real time.`,
+                },
+                {
+                  icon: "rank_gold" as const,
+                  title: "Your rank decides your cut",
+                  body: "Top 1% take 50%. Next 9% take 30%. Everyone active splits the rest. No rank, no payout.",
+                },
+                {
+                  icon: "building_silo" as const,
+                  title: "No hidden treasury theater",
+                  body: "No SP for sale. No pre-mine payout. Just the real fee pot, split by how you actually played.",
+                },
+              ] as const
+            ).map((col) => (
+              <li key={col.title} className="pf-card flex flex-col gap-3 p-4">
+                <span className="pf-chrome-slot !h-11 !w-11" aria-hidden>
+                  <PixelIcon id={col.icon} size={26} />
+                </span>
+                <h3 className="text-base font-bold text-[var(--ink)]">{col.title}</h3>
+                <p className="text-sm leading-relaxed text-[var(--ink-muted)]">{col.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <section id="intro" className="scroll-mt-20 border-b border-[var(--rule)] bg-[var(--cream)]">
         <div className="relative mx-auto max-w-6xl px-4 py-10 sm:py-12">
           <span className="pf-ambient pf-ambient-intro" aria-hidden>

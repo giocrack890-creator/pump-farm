@@ -44,7 +44,7 @@ const TOKENOMICS_ROWS: { label: string; note: string; icon: PixelIconId }[] = [
   {
     label: "Trade fees → Silo",
     note: "Fund the Season pot (on-chain treasury)",
-    icon: "building_silo",
+    icon: "coin_farm",
   },
   {
     label: `Top ${PAYOUT_TIER_1_PCT * 100}% farmers`,
@@ -162,9 +162,13 @@ export function LandingContent() {
       </section>
 
       <section id="tokenomics" className="scroll-mt-20">
-        <h2 className="pf-display text-lg text-[var(--wood-dark)]">Tokenomics</h2>
+        <p className="pf-display text-[11px] tracking-wide text-[var(--wood-mid)]">TOKENOMICS</p>
+        <h2 className="pf-display mt-1 text-lg text-[var(--wood-dark)]">
+          Where the payout comes from
+        </h2>
         <p className="mt-2 text-sm text-[var(--ink-muted)]">
-          High-level loop — full numbers land with the ERC-20 launch.
+          How the Silo fills and how rank splits the pot — full CA numbers land with the ERC-20
+          launch.
         </p>
         <div className="pf-card mt-4 overflow-hidden p-2">
           <ul className="flex flex-col gap-1.5">
