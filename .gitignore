@@ -45,3 +45,4 @@ tmp/
 
 # local extracts
 /tmp/
+.data

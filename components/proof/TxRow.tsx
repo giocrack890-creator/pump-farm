@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { truncateAddress, cn } from "@/lib/utils";
+import { EXPLORER_TX } from "@/lib/chain/robinhood";
 
 export type TreasuryTx = {
   id: string;
@@ -17,7 +18,7 @@ type Props = {
 };
 
 export function TxRow({ tx }: Props) {
-  const explorer = `https://robinhoodchain.blockscout.com/tx/${tx.txHash}`;
+  const explorer = EXPLORER_TX(tx.txHash);
   return (
     <tr className="border-b border-white/5 hover:bg-white/[0.03]">
       <td className="px-4 py-3">

@@ -47,8 +47,16 @@
 }
 
 html {
-  color-scheme: dark;
   scroll-behavior: smooth;
+}
+
+html:has(.pf-landing) {
+  color-scheme: light;
+}
+
+body:has(.pf-landing) {
+  background: #fbf3e0;
+  color: #3a2414;
 }
 
 body {
@@ -249,6 +257,67 @@ a {
   .animate-draw-line {
     animation: none;
   }
+
+  .motion-safe\:animate-\[pf-afford_2\.6s_ease-in-out_infinite\],
+  .motion-safe\:animate-\[pf-shake_0\.4s_ease-in-out\],
+  .animate-\[pf-bob_2\.4s_ease-in-out_infinite\] {
+    animation: none !important;
+  }
+
+  [style*="pf-confetti"] {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+@keyframes pf-afford {
+  0%,
+  100% {
+    box-shadow: 3px 3px 0 #3a2414, 0 0 0 0 rgba(61, 255, 122, 0);
+  }
+  50% {
+    box-shadow: 3px 3px 0 #3a2414, 0 0 0 4px rgba(61, 255, 122, 0.28);
+  }
+}
+
+@keyframes pf-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes pf-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes pf-confetti {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(28px) scale(0.4);
+    opacity: 0;
+  }
 }
 
 .wallet-adapter-modal-wrapper {
@@ -262,4 +331,73 @@ a {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Season Silo coin fill — calm undulation + shimmer */
+.pf-silo-wave {
+  background: radial-gradient(ellipse at center, #f0c45a 0%, transparent 70%);
+  opacity: 0.9;
+  animation: pf-silo-wave 4s ease-in-out infinite;
+}
+.pf-silo-shimmer {
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 248, 220, 0.35) 48%,
+    transparent 62%
+  );
+  background-size: 220% 100%;
+  animation: pf-silo-shimmer 5.5s ease-in-out infinite;
+}
+.pf-silo-delta {
+  animation: pf-silo-delta 1.5s ease-out forwards;
+}
+.pf-silo-frame-in {
+  animation: pf-silo-frame-in 0.45s ease-out forwards;
+}
+@keyframes pf-silo-wave {
+  0%,
+  100% {
+    transform: translateY(-40%) scaleX(1);
+  }
+  50% {
+    transform: translateY(calc(-40% - 3px)) scaleX(1.04);
+  }
+}
+@keyframes pf-silo-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}
+@keyframes pf-silo-delta {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -18px);
+  }
+}
+@keyframes pf-silo-frame-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-silo-wave,
+  .pf-silo-shimmer,
+  .pf-silo-delta,
+  .pf-silo-frame-in {
+    animation: none !important;
+  }
 }

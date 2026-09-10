@@ -45,7 +45,7 @@ export function RanksSheet({ open, onClose }: Props) {
       return [
         {
           rank: 1,
-          wallet: "7GkFarmLeaderboardDemo1111111111111111111",
+          wallet: "0xFARM000000000000000000000000000000000001",
           farmSize: 18,
           sp: 12840,
           projected: 8.4,
@@ -80,9 +80,9 @@ export function RanksSheet({ open, onClose }: Props) {
     <HudBottomSheet
       open={open}
       onClose={onClose}
-      title="Ranking"
-      subtitle="Quién va primero en SP esta Season. Eso define cuánto del pozo te toca."
-      ariaLabel="Ranking de la Season"
+      title="Leaderboard"
+      subtitle="Who leads SP this Season — that rank decides your pot share."
+      ariaLabel="Season leaderboard"
       maxHeightClass="max-h-[85vh]"
     >
       <div className="mb-3 flex gap-2">

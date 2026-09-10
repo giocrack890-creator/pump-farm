@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   LeftIconColumn,
@@ -24,32 +24,58 @@ import {
   HireFarmersSheet,
   type FarmersPanelState,
 } from "@/components/sheets/HireFarmersSheet";
-import { DecorSheet } from "@/components/sheets/DecorSheet";
 import { RewardsSheet } from "@/components/sheets/RewardsSheet";
 import { RanksSheet } from "@/components/sheets/RanksSheet";
-import type { DecorPlacement } from "@/lib/game/decor";
-import type { DecorItemId } from "@/lib/game/decor";
-import { DevBypassButton } from "@/components/layout/DevBypassButton";
+import { ShopSheet, type AnimalsPanelState } from "@/components/sheets/ShopSheet";
+import { NpcDialogue, NPC_TAP_LINES, type NpcId } from "@/components/hud/NpcDialogue";
 import { WalletButton } from "@/components/layout/WalletButton";
+import { FarmEnterGate } from "@/components/play/FarmEnterGate";
 import { DISCLAIMER } from "@/components/layout/Footer";
 import { useFarmStore } from "@/store/useFarmStore";
 import { useWalletStore } from "@/store/useWalletStore";
 import { useSeasonStore } from "@/store/useSeasonStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
 import { useSoundStore, sounds } from "@/store/useSoundStore";
+import { useAmbientMusic } from "@/hooks/useAmbientMusic";
+import { toast } from "@/store/useToastStore";
+import { HarvestFlyLayer, type FlyFx } from "@/components/hud/HarvestFlyLayer";
+import { WeatherLayer } from "@/components/farm/WeatherLayer";
+import type { FarmCanvasHandle } from "@/game/FarmCanvas";
+import { FARMER_SPECIES, farmerHypePerSec, type FarmerSpeciesId } from "@/lib/game/farmers";
+import { ANIMAL_SPECIES, type AnimalSpeciesId } from "@/lib/game/animals";
 import type { SeedTierId } from "@/lib/game/seeds";
+import { coverageUpgradeBonus } from "@/lib/game/autoHarvest";
 import type { CompanionId } from "@/lib/game/companions";
 import type { ScenePlot } from "@/game/FarmScene";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { hydrateDemoFromLocal, writeDemoSaveLocal } from "@/lib/demo/clientSave";
+import { utcDayKey } from "@/lib/game/hype";
+
+const TUTORIAL_DONE_KEY = "pumpfarm_tutorial_done_v1";
+
+function readTutorialDoneLocal(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(TUTORIAL_DONE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeTutorialDoneLocal() {
+  try {
+    window.localStorage.setItem(TUTORIAL_DONE_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
 
 const FarmCanvas = dynamic(
   () => import("@/game/FarmCanvas").then((m) => m.FarmCanvas),
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-dvh items-center justify-center bg-[#87b8d8] text-[#1a1008]/70">
-        Loading farm scene…
+      <div className="flex h-dvh items-center justify-center bg-[#92c868] text-[#1a1008]/70">
+        Loading farm…
       </div>
     ),
   },
@@ -73,22 +99,28 @@ export default function PlayPage() {
   const bumpQuest = usePlayerStore((s) => s.bumpQuestHarvest);
   const questHarvest = usePlayerStore((s) => s.questHarvestToday);
   const setCompanionId = usePlayerStore((s) => s.setCompanionId);
-  const muted = useSoundStore((s) => s.muted);
-  const toggleMuted = useSoundStore((s) => s.toggleMuted);
+  const sfxMuted = useSoundStore((s) => s.muted);
+  const toggleSfxMuted = useSoundStore((s) => s.toggleMuted);
+  const musicMuted = useSoundStore((s) => s.musicMuted);
+  const toggleMusicMuted = useSoundStore((s) => s.toggleMusicMuted);
+  const [levelUp, setLevelUp] = useState<number | null>(null);
+  const { unlocked: musicUnlocked, showMuted: musicHudMuted } = useAmbientMusic({
+    duck: levelUp != null,
+  });
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [plantPlot, setPlantPlot] = useState<ScenePlot | null>(null);
   const [nav, setNav] = useState("shop");
   const [panel, setPanel] = useState<
-    "almanac" | "companion" | "expand" | "farmers" | "decor" | "rewards" | "ranks" | null
+    "almanac" | "companion" | "expand" | "farmers" | "shop" | "rewards" | "ranks" | null
   >(null);
   const [farmers, setFarmers] = useState<FarmersPanelState | null>(null);
-  const [decor, setDecor] = useState<DecorPlacement[]>([]);
+  const [animals, setAnimals] = useState<AnimalsPanelState | null>(null);
+  const [dailyClaimed, setDailyClaimed] = useState(false);
+  const [offlineBanner, setOfflineBanner] = useState<string | null>(null);
   const [weather, setWeather] = useState("Sunny");
-  const [levelUp, setLevelUp] = useState<number | null>(null);
   const [burstId, setBurstId] = useState<string | null>(null);
-  const [sheetMsg, setSheetMsg] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [hasCompletedTutorial, setHasCompletedTutorial] = useState(true);
@@ -97,6 +129,13 @@ export default function PlayPage() {
   const [tutorialPlantId, setTutorialPlantId] = useState<string | null>(null);
   const [instantReadyId, setInstantReadyId] = useState<string | null>(null);
   const [expandPulse, setExpandPulse] = useState(0);
+  const [npcTip, setNpcTip] = useState<{ npc: NpcId; text: string } | null>(null);
+  const [harvestCombo, setHarvestCombo] = useState(1);
+  const [flyFx, setFlyFx] = useState<FlyFx[]>([]);
+  const farmRef = useRef<FarmCanvasHandle | null>(null);
+  const comboTimer = useRef(0);
+  const lastHarvestAt = useRef(0);
+  const harvestComboRef = useRef(1);
 
   const scenePlots: ScenePlot[] = useMemo(
     () =>
@@ -146,6 +185,7 @@ export default function PlayPage() {
     } catch {
       /* demo still advances locally */
     }
+    writeTutorialDoneLocal();
     setHasCompletedTutorial(true);
     setTutorialReplay(false);
     setTutorialStep(null);
@@ -153,13 +193,22 @@ export default function PlayPage() {
     setTutorialPlantId(null);
   }, [jwt]);
 
-  const refresh = useCallback(async () => {
+  const lastHydrateAt = useRef(0);
+
+  const refresh = useCallback(async (opts?: { skipHydrate?: boolean }) => {
     if (!jwt) {
       setLoading(false);
       setLoadError(true);
       return;
     }
     try {
+      // Hydrate at most every 12s — cold instances need it; rapid upgrades must not wait on it.
+      const now = Date.now();
+      if (!opts?.skipHydrate && now - lastHydrateAt.current > 12_000) {
+        await hydrateDemoFromLocal(jwt);
+        lastHydrateAt.current = now;
+      }
+
       const res = await fetch("/api/farm", {
         headers: { Authorization: `Bearer ${jwt}` },
       });
@@ -168,6 +217,9 @@ export default function PlayPage() {
         return;
       }
       const data = await res.json();
+      if (data.demoSave) {
+        writeDemoSaveLocal(data.demoSave);
+      }
       syncFromServer({
         plots: data.plots,
         hype: Number(data.wallet?.hypeBalance ?? 0),
@@ -179,8 +231,25 @@ export default function PlayPage() {
       });
       if (data.wallet?.xp != null) setXp(Number(data.wallet.xp));
       if (data.wallet?.gridSize) usePlayerStore.getState().setGridSize(data.wallet.gridSize);
-      if (data.farmers) setFarmers(data.farmers as FarmersPanelState);
-      if (Array.isArray(data.decor)) setDecor(data.decor as DecorPlacement[]);
+      if (data.farmers) {
+        const panelData = data.farmers as FarmersPanelState;
+        const oh = panelData.offlineHarvest;
+        // Server only emits this after ≥90s away — set once per payload (don't stack while open).
+        if (oh && oh.crops > 0) {
+          setOfflineBanner((prev) => {
+            if (prev) return prev;
+            const msg = `Welcome back — your workers auto-farmed ${oh.crops} crop${oh.crops === 1 ? "" : "s"} (+${oh.sp} SP)${oh.capped ? " (8h cap)" : ""} while you were away.`;
+            toast.info(msg, 5200);
+            return msg;
+          });
+        }
+        setFarmers({ ...panelData, offlineHarvest: null });
+      }
+      if (data.animals) {
+        setAnimals(data.animals as AnimalsPanelState);
+      }
+      const lastDaily = data.wallet?.lastDailyHypeAt as string | null | undefined;
+      setDailyClaimed(Boolean(lastDaily && lastDaily.slice(0, 10) === utcDayKey()));
       if (data.weather) setWeather(String(data.weather));
       if (data.season) {
         setSeason({
@@ -189,10 +258,13 @@ export default function PlayPage() {
           endsAt: data.season.endsAt,
         });
       }
-      const done = Boolean(data.wallet?.hasCompletedTutorial);
+      const done = Boolean(data.wallet?.hasCompletedTutorial) || readTutorialDoneLocal();
       setHasCompletedTutorial(done);
+      if (done) writeTutorialDoneLocal();
       if (!done && !tutorialReplay) {
         setTutorialStep((prev) => prev ?? "welcome");
+      } else if (done && !tutorialReplay) {
+        setTutorialStep(null);
       }
       setLoadError(false);
     } catch {
@@ -224,38 +296,119 @@ export default function PlayPage() {
       return;
     }
     if (plot.status === "ready" || plot.status === "blighted") {
-      if (!jwt) return;
-      const res = await fetch("/api/farm/harvest", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ plotId: plot.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error ?? "Harvest failed");
-        return;
-      }
-      sounds.harvest();
-      setBurstId(plot.id);
-      setInstantReadyId(null);
-      bumpQuest();
-      if (data.xpGained) {
-        const r = addXp(Number(data.xpGained));
-        if (r.leveled) setLevelUp(r.level);
-      } else if (data.xp != null) {
-        setXp(Number(data.xp));
-      }
-      await refresh();
-      setTimeout(() => setBurstId(null), 800);
-      if (tutorialStep === "harvest") setTutorialStep("xp");
+      await runHarvest(plot);
     }
+  };
+
+  const playHarvestJuice = (
+    plot: ScenePlot,
+    data: {
+      pointsAwarded?: number;
+      spGained?: number;
+      points?: number;
+      awarded?: number;
+      xpGained?: number;
+      xp?: number;
+    },
+  ) => {
+    const now = Date.now();
+    const combo =
+      now - lastHarvestAt.current < 2200
+        ? Math.min(5, harvestComboRef.current + 1)
+        : 1;
+    lastHarvestAt.current = now;
+    harvestComboRef.current = combo;
+    setHarvestCombo(combo);
+    window.clearTimeout(comboTimer.current);
+    comboTimer.current = window.setTimeout(() => {
+      harvestComboRef.current = 1;
+      setHarvestCombo(1);
+    }, 2400);
+
+    const tier = plot.seedTier ?? "Basic";
+    sounds.harvest(tier);
+    const screen = farmRef.current?.getPlotScreenPoint(plot.id) ?? {
+      x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
+      y: typeof window !== "undefined" ? window.innerHeight * 0.45 : 0,
+    };
+    const spGain = Number(
+      data.pointsAwarded ?? data.awarded ?? data.spGained ?? data.points ?? 10,
+    );
+    setFlyFx((prev) => [
+      ...prev.slice(-4),
+      {
+        id: `fly-${now}-${plot.id}`,
+        kind: "sp",
+        amount: Math.max(1, Math.round(spGain)),
+        from: screen,
+      },
+    ]);
+    setBurstId(plot.id);
+    setInstantReadyId(null);
+    const prevQuest = questHarvest;
+    bumpQuest();
+    if (prevQuest < 3 && prevQuest + 1 >= 3) {
+      toast.quest("Harvest 3 crops today ✓ — streak fuel secured!");
+    }
+    if (data.xpGained) {
+      const r = addXp(Number(data.xpGained));
+      if (r.leveled) {
+        setLevelUp(r.level);
+        toast.levelUp(`Level ${r.level} — new unlocks incoming!`);
+      }
+    } else if (data.xp != null) {
+      setXp(Number(data.xp));
+    }
+    setTimeout(() => setBurstId(null), 800);
+  };
+
+  const runHarvest = async (plot: ScenePlot, opts?: { fromWorker?: boolean }) => {
+    if (!jwt) return;
+    await hydrateDemoFromLocal(jwt);
+    const res = await fetch("/api/farm/harvest", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ plotId: plot.id }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (!opts?.fromWorker) toast.error(data.error ?? "Harvest failed");
+      return;
+    }
+    if (data.demoSave) writeDemoSaveLocal(data.demoSave);
+    playHarvestJuice(plot, data);
+    await refresh();
+    if (!opts?.fromWorker && tutorialStep === "harvest") setTutorialStep("xp");
+  };
+
+  const onWorkerHarvest = (plot: ScenePlot, _workerId: string) => {
+    void runHarvest(plot, { fromWorker: true });
+  };
+
+  const onWorkerPlant = async (plot: ScenePlot, _workerId: string, seedTier: SeedTierId) => {
+    if (!jwt) return;
+    await hydrateDemoFromLocal(jwt);
+    const res = await fetch("/api/farm/plant", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ plotId: plot.id, seedTier }),
+    });
+    if (!res.ok) return;
+    const plantData = await res.json().catch(() => null);
+    if (plantData?.demoSave) writeDemoSaveLocal(plantData.demoSave);
+    sounds.plant();
+    await refresh();
   };
 
   const onPlant = async (tier: SeedTierId) => {
     if (!jwt || !plantPlot) return;
+    await hydrateDemoFromLocal(jwt);
     const res = await fetch("/api/farm/plant", {
       method: "POST",
       headers: {
@@ -266,9 +419,10 @@ export default function PlayPage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error ?? "Plant failed");
+      toast.error(data.error ?? "Plant failed");
       return;
     }
+    if (data.demoSave) writeDemoSaveLocal(data.demoSave);
     sounds.plant();
     const plantedId = plantPlot.id;
     setPlantPlot(null);
@@ -295,7 +449,7 @@ export default function PlayPage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error ?? "Instant grow failed");
+      toast.error(data.error ?? "Instant grow failed");
       return;
     }
     setInstantReadyId(tutorialPlantId);
@@ -303,21 +457,121 @@ export default function PlayPage() {
     setTutorialStep("harvest");
   };
 
-  const farmerAction = async (action: string, farmerId?: string) => {
+  const farmerBusy = useRef(false);
+
+  const farmerAction = async (
+    action: string,
+    farmerId?: string,
+    upgradeId?: string,
+    speciesId?: string,
+    seedTier?: string,
+  ) => {
+    if (!jwt || farmerBusy.current) return;
+    farmerBusy.current = true;
+    const fast =
+      action === "promote" ||
+      action === "buy-upgrade" ||
+      action === "deploy" ||
+      action === "bench" ||
+      action === "set-auto-seed";
+    try {
+      // Fast desk actions skip hydrate — warm instance + local write after is enough.
+      if (!fast) {
+        await hydrateDemoFromLocal(jwt);
+        lastHydrateAt.current = Date.now();
+      }
+      const res = await fetch("/api/farm/farmers", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action, farmerId, upgradeId, speciesId, seedTier }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        sounds.deny();
+        toast.error(data.error ?? "Action failed");
+        return;
+      }
+      if (data.demoSave) writeDemoSaveLocal(data.demoSave);
+      if (data.hypeBalance != null) {
+        syncFromServer({ hype: Number(data.hypeBalance) });
+      }
+      if (data.farmers) {
+        setFarmers({ ...(data.farmers as FarmersPanelState), offlineHarvest: null });
+      }
+      if (action === "hire-species" || action === "buy-upgrade" || action === "promote") {
+        sounds.buy();
+      }
+      if (fast) {
+        // UI already patched — no blocking full refresh
+        return;
+      }
+      await refresh({ skipHydrate: true });
+    } finally {
+      farmerBusy.current = false;
+    }
+  };
+
+  const onBuyAnimal = async (speciesId: AnimalSpeciesId) => {
     if (!jwt) return;
-    const res = await fetch("/api/farm/farmers", {
+    const res = await fetch("/api/farm/animals", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${jwt}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ action, farmerId }),
+      body: JSON.stringify({ action: "buy", speciesId }),
     });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error ?? "Action failed");
+      sounds.deny();
+      toast.error(data.error ?? "Could not buy animal");
       return;
     }
+    sounds.buy();
+    const name = ANIMAL_SPECIES[speciesId]?.name ?? speciesId;
+    toast.success(`${name} joined the yard`);
+    await refresh();
+  };
+
+  const onClaimAnimalIdle = async () => {
+    if (!jwt) return;
+    const res = await fetch("/api/farm/animals", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action: "claim-idle" }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      sounds.deny();
+      toast.error(data.error ?? "Nothing to claim");
+      return;
+    }
+    sounds.currencyDing();
+    toast.success(`+${Number(data.awarded ?? 0).toFixed(2)} animal Hype claimed`);
+    await refresh();
+  };
+
+  const onClaimDaily = async () => {
+    if (!jwt) return;
+    const res = await fetch("/api/farm/claim-daily", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      sounds.deny();
+      toast.error(data.error ?? "Already claimed today");
+      return;
+    }
+    sounds.currencyDing();
+    toast.success(`+${data.awarded ?? data.amount ?? 50} Hype claimed for today`);
+    setDailyClaimed(true);
     await refresh();
   };
 
@@ -329,7 +583,7 @@ export default function PlayPage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      alert(data.error ?? "Expand failed");
+      toast.error(data.error ?? "Expand failed");
       return;
     }
     if (data.gridSize) usePlayerStore.getState().setGridSize(data.gridSize);
@@ -380,41 +634,24 @@ export default function PlayPage() {
 
   if (!jwt || loadError) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center px-4 text-center">
-        <Card className="w-full space-y-4 border-[4px] border-[#6b3e1f] bg-[#e8c48a] p-8 shadow-[4px_4px_0_#3a2414]">
-          <h1 className="font-[family-name:var(--font-pixel)] text-lg text-[#4a1e0c]">
-            Enter the farm
-          </h1>
-          <p className="text-sm text-[#6b3e1f]">
-            Tap Play demo to jump straight into the farm — no wallet needed for the public
-            demo.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {loadError && jwt ? (
-              <Button
-                variant="gold"
-                onClick={() => {
-                  useWalletStore.getState().clearAuth();
-                  setLoadError(false);
-                }}
-              >
-                Clear session
-              </Button>
-            ) : (
-              <DevBypassButton auto={!jwt && !loadError} />
-            )}
-            <WalletButton />
-          </div>
-        </Card>
-        <p className="mt-6 max-w-md text-[10px] leading-relaxed text-[#4a1e0c]/50">{DISCLAIMER}</p>
-      </div>
+      <FarmEnterGate
+        loadError={loadError}
+        onClearSession={() => {
+          useWalletStore.getState().clearAuth();
+          setLoadError(false);
+        }}
+      />
     );
   }
 
   return (
-    <div className="relative h-dvh w-screen overflow-hidden bg-[#87b8d8]">
+    <div className="relative h-dvh w-screen overflow-hidden bg-[#92c868]">
       {!loading && (
         <FarmCanvas
+          ref={farmRef}
+          onReady={(h) => {
+            farmRef.current = h;
+          }}
           gridSize={gridSize}
           plots={scenePlots}
           farmLevel={level}
@@ -423,18 +660,46 @@ export default function PlayPage() {
           onPlotTap={onPlotTap}
           onExpandTap={() => setPanel("expand")}
           onBarnTap={() =>
-            setSheetMsg(`Exchange look tracks Farm Level (visual L${level}).`)
+            setNpcTip({ npc: "foreman", text: NPC_TAP_LINES.foreman })
           }
           onSiloTap={() => {
             if (tutorialStep === "silo") setTutorialStep("nav");
             setPanel("rewards");
           }}
+          onNpcTap={(npc) => setNpcTip({ npc, text: NPC_TAP_LINES[npc] })}
+          onWorkerHarvest={onWorkerHarvest}
+          onWorkerPlant={(plot, workerId, tier) => void onWorkerPlant(plot, workerId, tier)}
           harvestBurstPlotId={burstId}
+          harvestCombo={harvestCombo}
           highlightPlot={highlightPlot}
           tutorialInstantReadyPlotId={instantReadyId}
           expandPulse={expandPulse}
-          decor={decor}
+          workers={(farmers?.roster ?? []).map((f) => ({
+            id: f.id,
+            deployed: f.deployed,
+            speciesId: f.speciesId,
+            level: f.level,
+          }))}
+          animals={animals?.roster ?? []}
+          autoSeedTier={farmers?.autoSeedTier ?? "Basic"}
+          hypeBalance={hype}
+          workerUpgradeBonus={coverageUpgradeBonus(farmers?.upgrades ?? {})}
         />
+      )}
+      <WeatherLayer weather={weather} className="z-[5]" />
+      {offlineBanner && (
+        <div className="absolute left-1/2 top-20 z-40 w-[min(92vw,420px)] -translate-x-1/2 border-[3px] border-[#6b3e1f] bg-[#f6e6c4] px-3 py-2 shadow-[4px_4px_0_#3a2414]">
+          <p className="font-[family-name:var(--font-pixel)] text-[10px] leading-relaxed text-[#4a1e0c]">
+            {offlineBanner}
+          </p>
+          <button
+            type="button"
+            className="mt-2 cursor-pointer border-2 border-[#6b3e1f] bg-[#3dff7a] px-2 py-1 text-[9px] font-bold"
+            onClick={() => setOfflineBanner(null)}
+          >
+            Nice
+          </button>
+        </div>
       )}
       <StardewTopHud
         sp={sp}
@@ -443,14 +708,32 @@ export default function PlayPage() {
         weather={weather}
         activity={farmers?.activity ?? 1}
         hypePerSec={farmers?.hypePerSec ?? 0}
+        incomeBreakdown={[
+          ...(farmers?.roster ?? [])
+            .filter((f) => f.deployed)
+            .map((f) => ({
+              label: FARMER_SPECIES[f.speciesId]?.name ?? f.speciesId.replace(/_/g, " "),
+              rate: farmerHypePerSec(f),
+            })),
+          ...(animals?.roster ?? []).map((a) => ({
+            label: ANIMAL_SPECIES[a.speciesId]?.name ?? a.speciesId,
+            rate: ANIMAL_SPECIES[a.speciesId]?.hypePerSec ?? 0,
+          })),
+        ]}
       />
       <LeftIconColumn
-        muted={muted}
-        onToggleMute={toggleMuted}
+        muted={musicHudMuted}
+        onToggleMute={() => {
+          // Icon looks muted until first gesture — don't flip preference to muted on that tap.
+          if (!musicUnlocked && !musicMuted) return;
+          toggleMusicMuted();
+        }}
         onShare={() => {
           const url = `${window.location.origin}/play`;
-          void navigator.clipboard.writeText(url);
-          alert("Farm link copied");
+          void navigator.clipboard.writeText(url).then(
+            () => toast.success("Farm link copied"),
+            () => toast.error("Couldn't copy link — try again"),
+          );
         }}
         onMenu={() => setMenuOpen(true)}
       />
@@ -470,7 +753,9 @@ export default function PlayPage() {
       <QuestTicket
         text="Harvest 3 crops today"
         progress={`${Math.min(3, questHarvest)}/3`}
+        claimed={questHarvest >= 3}
       />
+      <NpcDialogue tip={npcTip} onDismiss={() => setNpcTip(null)} />
       <BottomNav
         active={nav}
         onSelect={(id) => {
@@ -480,11 +765,10 @@ export default function PlayPage() {
             setPanel("rewards");
           } else if (id === "almanac") setPanel("almanac");
           else if (id === "farmers") setPanel("farmers");
-          else if (id === "decorate") setPanel("decor");
           else if (id === "friends") {
-            setSheetMsg("Referrals: copy your farm link with Share.");
+            toast.info("Referrals: copy your farm link with Share.");
           } else if (id === "shop") {
-            setSheetMsg("Shop: tap empty plots to plant seeds. Hire tab = farmers.");
+            setPanel("shop");
           }
         }}
       />
@@ -515,7 +799,7 @@ export default function PlayPage() {
         onAdopt={(id: CompanionId) => {
           setCompanionId(id);
           setPanel(null);
-          setSheetMsg(`Adopted companion.`);
+          toast.success("Companion adopted.");
         }}
       />
       <ExpandLandSheet
@@ -529,41 +813,31 @@ export default function PlayPage() {
       <HireFarmersSheet
         open={panel === "farmers"}
         hype={hype}
+        level={level}
         farmers={farmers}
         onClose={() => setPanel(null)}
-        onScout={() => void farmerAction("scout")}
-        onHire={() => void farmerAction("hire")}
-        onDismissScout={() => void farmerAction("dismiss-scout")}
+        onHireSpecies={(speciesId: FarmerSpeciesId) =>
+          void farmerAction("hire-species", undefined, undefined, speciesId)
+        }
         onDeploy={(id) => void farmerAction("deploy", id)}
         onBench={(id) => void farmerAction("bench", id)}
         onPromote={(id) => void farmerAction("promote", id)}
         onClaimIdle={() => void farmerAction("claim-idle")}
+        onBuyUpgrade={(upgradeId) => void farmerAction("buy-upgrade", undefined, upgradeId)}
+        onSetAutoSeed={(tier) =>
+          void farmerAction("set-auto-seed", undefined, undefined, undefined, tier)
+        }
       />
-      <DecorSheet
-        open={panel === "decor"}
-        level={level}
+      <ShopSheet
+        open={panel === "shop"}
         hype={hype}
-        placements={decor}
+        level={level}
+        dailyClaimed={dailyClaimed}
+        animals={animals}
         onClose={() => setPanel(null)}
-        onPlace={(itemId: DecorItemId) => {
-          void (async () => {
-            if (!jwt) return;
-            const res = await fetch("/api/farm/decor", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${jwt}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ itemId }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-              alert(data.error ?? "Decor failed");
-              return;
-            }
-            await refresh();
-          })();
-        }}
+        onClaimDaily={() => void onClaimDaily()}
+        onBuyAnimal={(id) => void onBuyAnimal(id)}
+        onClaimAnimalIdle={() => void onClaimAnimalIdle()}
       />
       <RewardsSheet open={panel === "rewards"} onClose={() => setPanel(null)} />
       <RanksSheet open={panel === "ranks"} onClose={() => setPanel(null)} />
@@ -582,6 +856,11 @@ export default function PlayPage() {
         />
       )}
 
+      <HarvestFlyLayer
+        items={flyFx}
+        onDone={(id) => setFlyFx((prev) => prev.filter((f) => f.id !== id))}
+      />
+
       {menuOpen && (
         <div className="fixed inset-0 z-[55] flex items-end justify-center bg-black/40 p-4 md:items-center">
           <div className="w-full max-w-sm border-[3px] border-[#3a2414] bg-[#c4a06a] p-4 shadow-[6px_6px_0_#1a1008]">
@@ -590,6 +869,30 @@ export default function PlayPage() {
               Mute, wallet, and docs. Tutorial runs once per wallet.
             </p>
             <div className="mt-3 flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5 border-[3px] border-[#3a2414] bg-[#fff8e8] p-2">
+                <button
+                  type="button"
+                  className="flex cursor-pointer items-center justify-between gap-2 px-1 py-1 text-left text-xs font-bold text-[#1a1008]"
+                  onClick={toggleMusicMuted}
+                  aria-pressed={musicMuted}
+                >
+                  <span>Music</span>
+                  <span className="tabular-nums text-[#3a2414]/70">
+                    {musicMuted ? "Off" : "On"}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="flex cursor-pointer items-center justify-between gap-2 px-1 py-1 text-left text-xs font-bold text-[#1a1008]"
+                  onClick={toggleSfxMuted}
+                  aria-pressed={sfxMuted}
+                >
+                  <span>SFX</span>
+                  <span className="tabular-nums text-[#3a2414]/70">
+                    {sfxMuted ? "Off" : "On"}
+                  </span>
+                </button>
+              </div>
               <button
                 type="button"
                 className="cursor-pointer border-[3px] border-[#3a2414] bg-[#ffe08a] px-3 py-2 text-left text-xs font-bold text-[#1a1008]"
@@ -598,6 +901,11 @@ export default function PlayPage() {
                   setTutorialReplay(true);
                   setTutorialPlantId(null);
                   setInstantReadyId(null);
+                  try {
+                    window.localStorage.removeItem(TUTORIAL_DONE_KEY);
+                  } catch {
+                    /* ignore */
+                  }
                   setTutorialStep("welcome");
                 }}
               >
@@ -625,14 +933,6 @@ export default function PlayPage() {
         </div>
       )}
 
-      {sheetMsg && (
-        <div className="fixed bottom-28 left-1/2 z-50 -translate-x-1/2 rounded-full border border-white/10 bg-black/80 px-4 py-2 text-xs text-white">
-          {sheetMsg}
-          <button type="button" className="ml-2 text-[#3DFF7A]" onClick={() => setSheetMsg(null)}>
-            OK
-          </button>
-        </div>
-      )}
 
       <p className="pointer-events-none absolute bottom-[4.5rem] left-1/2 z-10 w-[min(92vw,28rem)] -translate-x-1/2 text-center text-[8px] leading-snug text-[#1a1008]/45 md:bottom-20">
         {DISCLAIMER}

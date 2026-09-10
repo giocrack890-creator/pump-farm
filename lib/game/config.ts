@@ -105,14 +105,58 @@ export const MIN_PAYOUT_FARM_BALANCE = Number(
 export const WEATHER_RAINBOW_FRACTION = 0.15
 export const WEATHER_STORM_FRACTION = -0.05
 
-/** Decimal places used when splitting token amounts. */
-export const PAYOUT_AMOUNT_DECIMALS = 9
+/** Decimal places used when splitting token amounts (ERC-20 default = 18). */
+export const PAYOUT_AMOUNT_DECIMALS = 18
 
 export const TOKEN_TICKER = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "FARM"
+/** ERC-20 contract address on Robinhood Chain (0x…). Placeholder until deploy + audit. */
 export const TOKEN_MINT =
   process.env.NEXT_PUBLIC_TOKEN_MINT ??
-  "So11111111111111111111111111111111111111112"
+  "0x0000000000000000000000000000000000000000"
 export const TREASURY_WALLET =
   process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS ??
   process.env.TREASURY_WALLET_ADDRESS ??
   ""
+
+/** Season Silo fill target (ETH) for % full UI. */
+export const SILO_TARGET_ETH = (() => {
+  const raw =
+    process.env.SILO_TARGET_ETH ??
+    process.env.NEXT_PUBLIC_SILO_TARGET_ETH ??
+    process.env.SILO_TARGET_SOL ??
+    process.env.NEXT_PUBLIC_SILO_TARGET_SOL
+  const n = Number(raw ?? "100")
+  return Number.isFinite(n) && n > 0 ? n : 100
+})()
+
+/** @deprecated pot is ETH on Robinhood Chain */
+export const SILO_TARGET_SOL = SILO_TARGET_ETH
+
+/** Display FX for ETH → USD in pot UI (not on-chain oracle). */
+export const ETH_USD_DISPLAY = (() => {
+  const raw =
+    process.env.NEXT_PUBLIC_ETH_USD ??
+    process.env.ETH_USD ??
+    process.env.NEXT_PUBLIC_SOL_USD ??
+    process.env.SOL_USD
+  const n = Number(raw ?? "2460")
+  return Number.isFinite(n) && n > 0 ? n : 2460
+})()
+
+/** @deprecated use ETH_USD_DISPLAY */
+export const SOL_USD_DISPLAY = ETH_USD_DISPLAY
+
+/**
+ * Only treat $FARM ERC-20 as live when explicitly configured (not a zero/placeholder).
+ * Landing CA card shows "not live yet" until this is true.
+ * Being on Robinhood Chain ≠ listed inside the Robinhood brokerage app.
+ */
+export function isTokenMintLive(): boolean {
+  const mint = process.env.NEXT_PUBLIC_TOKEN_MINT?.trim()
+  if (!mint) return false
+  if (process.env.NEXT_PUBLIC_TOKEN_LIVE === "true") return true
+  if (mint === "So11111111111111111111111111111111111111112") return false
+  if (mint.toLowerCase().includes("replace")) return false
+  if (/^0x0+$/i.test(mint)) return false
+  return /^0x[a-fA-F0-9]{40}$/.test(mint)
+}

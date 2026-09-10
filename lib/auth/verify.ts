@@ -1,6 +1,6 @@
 import { verifyMessage, isAddress, getAddress, type Hex } from "viem";
 import { NextRequest } from "next/server";
-import { authMessage, verifyAuthToken } from "./jwt";
+import { authMessage, normalizeAuthAddress, verifyAuthToken } from "./jwt";
 
 export function isEvmAddress(value: string): boolean {
   return isAddress(value);
@@ -40,7 +40,7 @@ export async function requireAuth(
   }
   try {
     const payload = await verifyAuthToken(header.slice(7));
-    return { address: payload.address.toLowerCase() };
+    return { address: normalizeAuthAddress(payload.address) };
   } catch {
     return {
       error: Response.json({ error: "Invalid token" }, { status: 401 }),

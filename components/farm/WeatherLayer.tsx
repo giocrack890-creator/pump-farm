@@ -7,6 +7,7 @@ type Props = {
   className?: string;
 };
 
+/** Field color-grade overlay driven by market weather — pointer-events none. */
 export function WeatherLayer({ weather, className }: Props) {
   const storm = /storm/i.test(weather);
   const rainbow = /rainbow/i.test(weather);
@@ -15,14 +16,14 @@ export function WeatherLayer({ weather, className }: Props) {
     <div
       aria-hidden
       className={cn(
-        "pointer-events-none absolute inset-0 overflow-hidden transition-colors duration-700",
+        "pointer-events-none absolute inset-0 overflow-hidden transition-[background,opacity] duration-700",
         storm &&
-          "bg-[radial-gradient(circle_at_top,rgba(255,77,77,0.16),transparent_55%)]",
+          "bg-[radial-gradient(ellipse_at_top,rgba(40,55,90,0.28),rgba(20,30,50,0.18)_55%,transparent_75%)]",
         rainbow &&
-          "bg-[conic-gradient(from_180deg_at_50%_0%,rgba(61,255,122,0.2),rgba(126,200,255,0.15),rgba(255,201,77,0.2),rgba(61,255,122,0.15))]",
+          "bg-[conic-gradient(from_180deg_at_50%_0%,rgba(61,255,122,0.18),rgba(126,200,255,0.14),rgba(255,201,77,0.18),rgba(61,255,122,0.12))]",
         !storm &&
           !rainbow &&
-          "bg-[radial-gradient(circle_at_30%_0%,rgba(126,200,255,0.08),transparent_50%)]",
+          "bg-[radial-gradient(ellipse_at_30%_0%,rgba(255,230,160,0.12),transparent_55%)]",
         className,
       )}
     >
@@ -30,11 +31,11 @@ export function WeatherLayer({ weather, className }: Props) {
         ? Array.from({ length: 10 }).map((_, i) => (
             <span
               key={i}
-              className="absolute h-8 w-px bg-white/35"
+              className="absolute h-8 w-px bg-white/35 motion-safe:animate-[pf-bob_1.2s_ease-in-out_infinite]"
               style={{
                 left: `${10 + i * 8}%`,
                 top: `${(i * 13) % 55}%`,
-                animation: `float-y ${1.2 + (i % 3) * 0.25}s ease-in-out infinite`,
+                animationDelay: `${i * 80}ms`,
               }}
             />
           ))

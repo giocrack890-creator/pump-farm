@@ -38,7 +38,7 @@ export default function LeaderboardPage() {
       return [
         {
           rank: 1,
-          wallet: "7GkFarmLeaderboardDemo1111111111111111111",
+          wallet: "0xFARM000000000000000000000000000000000001",
           farmSize: 18,
           sp: 12840,
           projected: 8.4,

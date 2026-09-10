@@ -21,10 +21,29 @@ model Wallet {
   lastHarvestDay  String?
   lastDailyHypeAt DateTime?
   hasCompletedTutorial Boolean  @default(false)
+  /// Last successful farm snapshot / heartbeat for offline worker progress.
+  lastSeenAt      DateTime?
   seasonPoints    SeasonPoint[]
   plots           Plot[]
   stakes          Stake[]
   hypeLedger      HypeLedger[]
+  workers         Worker[]
+}
+
+/// Hired / helper workers for idle auto-harvest (wallet-scoped).
+model Worker {
+  id            String   @id @default(cuid())
+  walletId      String
+  wallet        Wallet   @relation(fields: [walletId], references: [address])
+  /// Species / helper type key (matches FarmerSpeciesId or pack helper id).
+  type          String
+  tier          Int      @default(1)
+  deployed      Boolean  @default(false)
+  hireTimestamp DateTime @default(now())
+  lastAutoHarvestAt DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([walletId, deployed])
 }
 
 model Season {

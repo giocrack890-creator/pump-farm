@@ -2,12 +2,10 @@ import Link from "next/link";
 import { TOKEN_TICKER } from "@/lib/game/config";
 import { Separator } from "@/components/ui/separator";
 
-export const DISCLAIMER = `Pump Farm is an entertainment product tied to $${TOKEN_TICKER}, a memecoin with no intrinsic value or expectation of financial return. Season Point rewards are distributed at the discretion of published on-chain rules and are not guaranteed. Play responsibly.`;
+export const DISCLAIMER = `Pump Farm is an entertainment product tied to $${TOKEN_TICKER}, a memecoin with no intrinsic value or expectation of financial return. The game and token target Robinhood Chain (EVM); Season Point rewards follow published on-chain rules and are not guaranteed. Deployment on Robinhood Chain does not mean $${TOKEN_TICKER} is listed or buyable inside the Robinhood brokerage app. Play responsibly.`;
 
 const SOCIALS = [
-  { href: "https://x.com", label: "X" },
-  { href: "https://t.me", label: "Telegram" },
-  { href: "https://discord.com", label: "Discord" },
+  { href: "https://x.com/PumpFarmer", label: "X" },
 ] as const;
 
 export function Footer() {

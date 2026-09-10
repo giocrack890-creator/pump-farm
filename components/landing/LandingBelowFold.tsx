@@ -55,7 +55,7 @@ const faqs = [
   },
   {
     q: "Do I need to know crypto to play?",
-    a: "You need a wallet on Robinhood Chain and enough gas for txs when claiming rewards. The farm loop itself is a normal plant → grow → harvest game.",
+    a: "You need an EVM wallet on Robinhood Chain (MetaMask, Robinhood Wallet, or WalletConnect) and enough ETH for gas when claiming on-chain rewards. The farm loop itself is a normal plant → grow → harvest game. Deploying on Robinhood Chain does not mean $FARM is buyable inside the Robinhood brokerage app.",
   },
   {
     q: "Can I buy Season Points?",
@@ -633,9 +633,7 @@ function SeedLadder() {
 
 function Community() {
   const socials = [
-    { label: "X / Twitter", href: "https://x.com", count: "Follow for seasons", icon: "𝕏" },
-    { label: "Telegram", href: "https://t.me", count: "Join the farm chat", icon: "✈" },
-    { label: "Discord", href: "https://discord.com", count: "Hang with farmers", icon: "◈" },
+    { label: "X", href: "https://x.com/PumpFarmer", count: "Follow for seasons", icon: "𝕏" },
   ];
 
   return (
@@ -788,12 +786,13 @@ function LandingFooter() {
               </Link>
             </li>
             <li>
-              <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-white">
+              <a
+                href="https://x.com/PumpFarmer"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white"
+              >
                 X
-              </a>
-              {" · "}
-              <a href="https://t.me" target="_blank" rel="noreferrer" className="hover:text-white">
-                Telegram
               </a>
             </li>
           </ul>

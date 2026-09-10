@@ -25,6 +25,8 @@ export type FarmerSpecies = {
   harvestSpBoost: number;
   flavor: string;
   unlockLevel: number;
+  /** Catalog portrait (AI pixel art). */
+  portrait: string;
 };
 
 export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
@@ -36,6 +38,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.02,
     flavor: "Hoe in hand. Keeps the dirt honest.",
     unlockLevel: 1,
+    portrait: "/assets/sprites/farmers/farmer-field-hand.png?v=2",
   },
   seed_scout: {
     id: "seed_scout",
@@ -45,6 +48,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.02,
     flavor: "Sniffs out Basic plots before coffee.",
     unlockLevel: 1,
+    portrait: "/assets/sprites/farmers/farmer-seed-scout.png?v=2",
   },
   plot_tender: {
     id: "plot_tender",
@@ -54,6 +58,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.03,
     flavor: "Waters on schedule. Rarely overwaters.",
     unlockLevel: 1,
+    portrait: "/assets/sprites/farmers/farmer-plot-tender.png?v=2",
   },
   harvest_hand: {
     id: "harvest_hand",
@@ -63,6 +68,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.05,
     flavor: "Cuts green candles clean.",
     unlockLevel: 5,
+    portrait: "/assets/sprites/farmers/farmer-harvest-hand.png?v=2",
   },
   greenhouse_tech: {
     id: "greenhouse_tech",
@@ -72,6 +78,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.06,
     flavor: "Hybrid whisperer.",
     unlockLevel: 5,
+    portrait: "/assets/sprites/farmers/farmer-greenhouse.png?v=2",
   },
   crop_analyst: {
     id: "crop_analyst",
@@ -81,6 +88,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.06,
     flavor: "Spreadsheets the soil moisture.",
     unlockLevel: 8,
+    portrait: "/assets/sprites/farmers/farmer-analyst.png?v=2",
   },
   hype_wrangler: {
     id: "hype_wrangler",
@@ -90,6 +98,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.08,
     flavor: "Rides the narrative wave.",
     unlockLevel: 10,
+    portrait: "/assets/sprites/farmers/farmer-hype-wrangler.png?v=2",
   },
   silo_keeper: {
     id: "silo_keeper",
@@ -99,6 +108,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.09,
     flavor: "Sleeps next to the fee vault.",
     unlockLevel: 12,
+    portrait: "/assets/sprites/farmers/farmer-silo-keeper.png?v=2",
   },
   golden_reaper: {
     id: "golden_reaper",
@@ -108,6 +118,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.1,
     flavor: "Only swings for Golden Harvests.",
     unlockLevel: 15,
+    portrait: "/assets/sprites/farmers/farmer-golden-reaper.png?v=2",
   },
   mythic_tiller: {
     id: "mythic_tiller",
@@ -117,6 +128,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.15,
     flavor: "Diamond hands, dirt under nails.",
     unlockLevel: 18,
+    portrait: "/assets/sprites/farmers/farmer-mythic-tiller.png?v=2",
   },
   farm_mogul: {
     id: "farm_mogul",
@@ -126,6 +138,7 @@ export const FARMER_SPECIES: Record<FarmerSpeciesId, FarmerSpecies> = {
     harvestSpBoost: 0.18,
     flavor: "Owns three counties. Works yours.",
     unlockLevel: 20,
+    portrait: "/assets/sprites/farmers/farmer-mogul.png?v=2",
   },
 };
 
@@ -157,8 +170,9 @@ export const RARITY_COLOR: Record<FarmerRarity, string> = {
   legendary: "#8a5a10",
 };
 
-export const MAX_FIELD_SPOTS_BASE = 3;
-export const MAX_FIELD_SPOTS_CAP = 8;
+export const MAX_FIELD_SPOTS_BASE = 5;
+/** Hard cap: at most 5 workers on the field at once. */
+export const MAX_FIELD_SPOTS_CAP = 5;
 export const SCOUT_COOLDOWN_MS = 8_000;
 export const IDLE_CLAIM_CAP_SEC = 8 * 3600; // 8h offline cap
 
@@ -168,13 +182,12 @@ export type OwnedFarmer = {
   level: number;
   deployed: boolean;
   hiredAt: string;
+  /** ISO timestamp of last auto-harvest sweep success. */
+  lastAutoHarvestAt?: string | null;
 };
 
-export function fieldSpotsForLevel(farmLevel: number): number {
-  return Math.min(
-    MAX_FIELD_SPOTS_CAP,
-    MAX_FIELD_SPOTS_BASE + Math.floor(Math.max(0, farmLevel - 1) / 4),
-  );
+export function fieldSpotsForLevel(_farmLevel: number): number {
+  return MAX_FIELD_SPOTS_CAP;
 }
 
 export function hireCost(rarity: FarmerRarity, rosterSize: number): number {
@@ -183,8 +196,9 @@ export function hireCost(rarity: FarmerRarity, rosterSize: number): number {
 
 export function farmerHypePerSec(f: OwnedFarmer): number {
   const sp = FARMER_SPECIES[f.speciesId];
-  const lvlMult = 1 + (f.level - 1) * 0.12;
-  return sp.baseHypePerSec * lvlMult;
+  // Stronger level curve so Upgrade clearly farms more Hype/s
+  const lvlMult = 1 + (f.level - 1) * 0.2;
+  return Math.round(sp.baseHypePerSec * lvlMult * 100) / 100;
 }
 
 export function deployedIncomePerSec(farmers: OwnedFarmer[]): number {
@@ -253,3 +267,26 @@ export function computeIdleHype(
 export function promoteCost(level: number): number {
   return Math.floor(25 * Math.pow(1.55, level - 1));
 }
+
+/** True if roster already owns this catalog species (one hire per type). */
+export function ownsFarmerSpecies(
+  farmers: OwnedFarmer[],
+  speciesId: FarmerSpeciesId,
+): boolean {
+  return farmers.some((f) => f.speciesId === speciesId);
+}
+
+/** Phaser tint per species so deployed workers read as distinct. */
+export const WORKER_SPRITE_TINT: Record<FarmerSpeciesId, number> = {
+  field_hand: 0xffffff,
+  seed_scout: 0xc8f0c8,
+  plot_tender: 0xffe8c8,
+  harvest_hand: 0xa8d8ff,
+  greenhouse_tech: 0xb8ffe0,
+  crop_analyst: 0xd0c8ff,
+  hype_wrangler: 0xe8b0ff,
+  silo_keeper: 0xffd0a0,
+  golden_reaper: 0xffe066,
+  mythic_tiller: 0xffc44d,
+  farm_mogul: 0xffd700,
+};

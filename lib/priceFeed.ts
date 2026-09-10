@@ -46,7 +46,12 @@ export async function fetchTokenPrice(): Promise<PriceSnapshot> {
   }
 
   try {
-    const url = `https://api.dexscreener.com/latest/dex/pairs/solana/${pairId}`;
+    // Robinhood Chain is EVM — never use pairs/solana/. Prefer explicit chain slug;
+    // fall back to token lookup by pair/token address (chain-agnostic).
+    const chain = process.env.DEXSCREENER_CHAIN?.trim();
+    const url = chain
+      ? `https://api.dexscreener.com/latest/dex/pairs/${encodeURIComponent(chain)}/${pairId}`
+      : `https://api.dexscreener.com/latest/dex/tokens/${pairId}`;
     const res = await fetch(url, {
       next: { revalidate: 30 },
       headers: { Accept: "application/json" },
@@ -60,9 +65,14 @@ export async function fetchTokenPrice(): Promise<PriceSnapshot> {
         priceChange?: { m5?: number; h1?: number; h24?: number };
         volume?: { h24?: number };
       };
-      pairs?: Array<unknown>;
+      pairs?: Array<{
+        priceUsd?: string;
+        url?: string;
+        priceChange?: { m5?: number; h1?: number; h24?: number };
+        volume?: { h24?: number };
+      }>;
     };
-    const pair = data.pair;
+    const pair = data.pair ?? data.pairs?.[0];
     const snapshot: PriceSnapshot = {
       priceUsd: Number(pair?.priceUsd ?? 0),
       priceChangeM5: Number(pair?.priceChange?.m5 ?? 0) / 100,

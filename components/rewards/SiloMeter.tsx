@@ -19,8 +19,8 @@ type Props = {
 export function SiloMeter({
   poolAmount,
   fillPct,
-  seasonLabel = "Pozo de esta Season (Silo)",
-  helperText = "Cuánto hay en el bote de premios ahora.",
+  seasonLabel = "Season rewards pot",
+  helperText = "How much is in the prize pool right now.",
 }: Props) {
   const clamped = Math.min(100, Math.max(0, fillPct));
 
@@ -30,13 +30,13 @@ export function SiloMeter({
       <p className={`mt-1 text-sm ${hudInkMuted}`}>{helperText}</p>
       <div className="mb-4 mt-4 flex items-end justify-between gap-3">
         <div>
-          <p className={`text-[10px] ${hudInkMuted}`}>En el bote</p>
+          <p className={`text-[10px] ${hudInkMuted}`}>In the pot</p>
           <p className={`text-2xl tabular-nums ${hudInk}`}>
             {formatNumber(poolAmount, 2)}{" "}
             <span className={`text-sm ${hudGold}`}>ETH</span>
           </p>
         </div>
-        <span className={`text-sm tabular-nums ${hudGold}`}>{clamped.toFixed(0)}% lleno</span>
+        <span className={`text-sm tabular-nums ${hudGold}`}>{clamped.toFixed(0)}% full</span>
       </div>
       <div className="relative mx-auto h-48 w-28 border-[3px] border-[#3a2414] bg-[#5c3d24] shadow-[4px_4px_0_#1a1008]">
         <div className="absolute inset-x-2 bottom-2 top-5 overflow-hidden border-2 border-[#3a2414]/60">

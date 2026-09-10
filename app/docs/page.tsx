@@ -13,6 +13,10 @@ const FAQ = [
     a: "Harvest yield = base seed tier × stake multiplier × streak multiplier × Golden Harvest multiplier. Blighted crops take up to 40% penalty. All math is recomputed server-side from timestamps — the client cannot forge SP.",
   },
   {
+    q: "What chain is this on?",
+    a: `Pump Farm runs on Robinhood Chain (EVM, chain ID 4663). Connect MetaMask, Robinhood Wallet, or WalletConnect. Gas is ETH. $${TOKEN_TICKER} is an ERC-20 — not an SPL token. Being on Robinhood Chain does not mean the token is listed in the Robinhood brokerage app.`,
+  },
+  {
     q: "Is this financial advice?",
     a: `No. $${TOKEN_TICKER} is a memecoin with no intrinsic value. Season rewards are entertainment incentives, not investment returns.`,
   },

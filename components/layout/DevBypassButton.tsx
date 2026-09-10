@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useWalletStore } from "@/store/useWalletStore";
+import { toast } from "@/store/useToastStore";
 
 function demoPlayEnabled() {
   if (typeof window === "undefined") return false;
@@ -12,7 +13,7 @@ function demoPlayEnabled() {
 }
 
 /** Demo / local play bypass — enabled on localhost or when NEXT_PUBLIC_DEMO_PLAY=true. */
-export function DevBypassButton({ auto = false }: { auto?: boolean }) {
+export function DevBypassButton() {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const setAuth = useWalletStore((s) => s.setAuth);
@@ -27,7 +28,7 @@ export function DevBypassButton({ auto = false }: { auto?: boolean }) {
       setAuth(data.address, data.token);
       window.location.href = "/play";
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Demo play failed");
+      toast.error(e instanceof Error ? e.message : "Demo play failed");
     } finally {
       setBusy(false);
     }
@@ -36,12 +37,6 @@ export function DevBypassButton({ auto = false }: { auto?: boolean }) {
   useEffect(() => {
     setShow(demoPlayEnabled());
   }, []);
-
-  useEffect(() => {
-    if (!auto || !show || jwt || busy) return;
-    void runBypass();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auto, show, jwt]);
 
   if (!show || jwt) return null;
 

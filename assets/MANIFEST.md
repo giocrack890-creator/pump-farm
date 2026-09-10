@@ -1,4 +1,4 @@
-# Asset Manifest — Pump Farm v9
+# Asset Manifest — Pump Farm v10
 
 ## Pack (authoritative world art)
 
@@ -10,7 +10,7 @@
 | License | Commercial use permitted; no resale/redistribution of the pack; not for NFT / AI-training use |
 | Chosen tile size | **32×32 only** (do not mix 16 / 48 in `/play`) |
 | Season default | **Spring** terrain + summer green tree accents |
-| In-repo path | `assets/sprites/farming-sim/32x32/` (source) → served from `public/assets/sprites/farming-sim/` |
+| In-repo path | `assets/sprites/farming-sim/` (Original + served copies) → `public/assets/sprites/farming-sim/` |
 
 ## HUD / UI pack
 
@@ -20,23 +20,41 @@
 | Served slices | `public/assets/sprites/ui/hud/*` |
 | Code paths | `components/hud/hudAssets.ts` |
 
-Includes: wood panels (9-slice), stat pills, progress bar, nav frames, button states, 20× 32-ish icons (coin, hype, XP, silo, medal, etc.). These are **UI chrome only** — world art remains VectoRaith farming-sim only.
+Includes: wood panels (9-slice), stat pills, progress bar, nav frames, button states, icons. **UI chrome only** — world art remains VectoRaith farming-sim.
 
-## What we use
+## Verified inventory (`Original/32x32/`)
 
-- **Terrain:** `Tilesets (Compact)/…terrain_spring_expanded_32x32.png` → `public/.../tiles/terrain_spring.png`
-- **Buildings:** cropped from compact buildings sheet → `objects/farmhouse.png`, `barn.png`, `silo.png`
-- **Crops (launch 4):** turnip-like → Basic; carrot-like → Hybrid; golden grain → Golden; orange vine fruit → Mythic — frames under `crops/{tier}/0..3.png`
-- **Animals:** `$chicken_hen_32x32.png` frame → companions
-- **Trees:** summer green tree from details sheet → `objects/tree.png`
-- **Map:** Tiled JSON `public/assets/maps/starter_farm.json` (orthogonal), loaded via Phaser `tilemapTiledJSON`
+Paths relative to pack root; Compact sheets are the primary gameplay sources.
 
-## Known gaps / notes
+| Sheet | Path | Contents (confirmed on disk) |
+|-------|------|------------------------------|
+| **Buildings** | `Tilesets (Compact)/vectoraith_tileset_farmingsims_buildings_32x32.png` (+ winter) | Farmhouse, barn, silo, shop/market, mailbox, chest, lamps, troughs, hay |
+| **Crops** | `…_crops_32x32.png`, `…_crops_dense_32x32.png` | 32×32 frame grids; each row = crop growth L→R. Dense seasonal variants under Modular |
+| **Terrain** | `…_terrains_32x32.png` | Autotile: tilled dirt, water/ponds, waterfalls, stone paths, cliffs. Seasonal Modular + RPG Maker autotiles |
+| **Details** | `…_details_32x32.png` | **Wooden fences + gates** (normal + snow), rocks, stumps, 3 tree colors, bushes, mushrooms, grass tufts, lily pads |
+| **Orchard** | `…_orchard_32x32.png` | Fruit trees |
+| **Sprites** | `Sprites/$farmer_32x32.png`, `!$farmer_plowing_32x32.png` | 4-dir × 3-frame walk; plowing. Animals: cow/calf/goat/lamb/sheep/chicken/cat variants |
 
-- Starter layout **omits fences and ponds** by design (composition uses dirt path + tilled soil edge). The pack *does* include fence/water tiles for a later licensed polish pass — do **not** invent replacements.
-- Pack has **one** farmhouse sprite — Farm Level tiers use light tint / decoration from the same pack, not new generated roofs (documented limitation).
-- **Zero** AI-generated or code-baked world art in `/play`. If a texture key is missing, FarmScene fails loudly on-screen.
+## What `/play` loads
 
-## HUD palette (sampled from pack)
+- **Terrain tileset:** `public/.../tiles/terrain_spring.png` (from Compact/Modular spring)
+- **Crop spritesheet:** `tiles/crops.png` as Phaser spritesheet `frameWidth/Height: 32` — see `game/cropFrames.ts` + contact sheet `crops/_contact_sheet.png`
+- **Buildings / fences / trees / farmer / chicken:** cropped objects under `objects/`
+- **Map:** `public/assets/maps/starter_farm.json` — 16×14 composed footprint, farmyard cluster, dirt path, fenced 5×4 soil, fog tile + locked signs on unclaimed rim, small pond
 
-Warm earth browns (`#5c3a1e`, `#c9a46a`), spring grass (`#7bb85c`), parchment (`#efe0bc`). UI icons may stay as existing small HUD icons; environment art must stay pack-only.
+## Crop frames (verified)
+
+```
+CROP_FRAMES.turnip   = { seedling: 16, growing: 17, mature: 18, ready: 19 }  // Basic
+CROP_FRAMES.carrot   = { seedling: 112, growing: 113, mature: 114, ready: 115 } // Hybrid
+CROP_FRAMES.wheat    = { seedling: 24, growing: 25, mature: 26, ready: 27 }   // Golden
+CROP_FRAMES.pumpkin  = { seedling: 144, growing: 145, mature: 146, ready: 147 } // Mythic
+```
+
+Do not guess indices — re-check the contact sheet first.
+
+## Notes
+
+- Fences and water **are in the pack** and are used in the v10 starter layout (earlier manifests wrongly said otherwise).
+- Pack has **one** farmhouse sprite — Farm Level tiers use light tint, not new roofs.
+- **Zero** AI-generated or code-baked world art in `/play`. Missing textures fail loudly in FarmScene.

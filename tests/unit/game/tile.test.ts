@@ -22,6 +22,7 @@ describe("tile / farm layout (v9 pack)", () => {
   it("exposes authored soil cluster", () => {
     const cells = soilCells();
     expect(cells.length).toBe(9);
-    expect(cells[0]).toEqual({ gridX: 14, gridY: 11 });
+    expect(cells[0]).toEqual({ gridX: 22, gridY: 20 });
+    expect(cells[cells.length - 1]).toEqual({ gridX: 24, gridY: 22 });
   });
 });

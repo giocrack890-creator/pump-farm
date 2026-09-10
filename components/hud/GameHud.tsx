@@ -6,6 +6,7 @@ import { useXpBar } from "@/store/usePlayerStore";
 import { nextUnlockLabel, unlocksAtLevel } from "@/lib/game/xp";
 import { BARN_MILESTONE_LABELS, barnVisualFromLevel } from "@/lib/game/barnVisual";
 import { HUD } from "@/components/hud/hudAssets";
+import { toast } from "@/store/useToastStore";
 
 /** Chunky pixel-panel frame (Sprout Lands–adjacent wood chrome). */
 const panel =
@@ -126,11 +127,14 @@ export function LeftIconColumn({
   onToggleMute,
   onShare,
   onMenu,
+  onScreenshot,
 }: {
+  /** Music mute visual (independent of SFX). */
   muted: boolean;
   onToggleMute: () => void;
   onShare: () => void;
   onMenu: () => void;
+  onScreenshot?: () => void;
 }) {
   const btn =
     "pointer-events-auto relative flex h-12 w-12 cursor-pointer items-center justify-center hover:brightness-110";
@@ -140,13 +144,16 @@ export function LeftIconColumn({
         [
           { label: "Share", onClick: onShare, icon: HUD.share },
           {
-            label: "Toggle sound",
+            label: muted ? "Unmute music" : "Mute music",
             onClick: onToggleMute,
             icon: muted ? HUD.soundOff : HUD.soundOn,
           },
           {
             label: "Screenshot",
-            onClick: () => alert("Screenshot: use your OS capture for now"),
+            onClick: () => {
+              if (onScreenshot) onScreenshot();
+              else toast.info("Screenshot: use your OS capture for now (Cmd/Ctrl+Shift+4).");
+            },
             icon: HUD.camera,
           },
           { label: "Menu", onClick: onMenu, icon: HUD.settings },
@@ -175,21 +182,15 @@ export function BottomNav({
   onSelect: (id: string) => void;
 }) {
   const tabs = [
-    { id: "silo", label: "Premios", icon: HUD.silo },
+    { id: "silo", label: "Rewards", icon: HUD.silo },
     { id: "shop", label: "Shop", icon: HUD.seed },
     { id: "farmers", label: "Hire", icon: HUD.heart },
     { id: "almanac", label: "Book", icon: HUD.bag },
-    { id: "decorate", label: "Decor", icon: HUD.axe },
     { id: "friends", label: "Friends", icon: HUD.share },
   ];
   return (
     <nav
-      className="pointer-events-auto absolute inset-x-2 bottom-2 z-20 mx-auto max-w-xl p-2 md:inset-x-auto"
-      style={{
-        backgroundImage: `url(${HUD.panel})`,
-        backgroundSize: "100% 100%",
-        imageRendering: "pixelated",
-      }}
+      className="pointer-events-auto absolute inset-x-2 bottom-2 z-20 mx-auto max-w-xl border-[3px] border-[#3a2414] bg-[#f3e2bc] p-2 shadow-[4px_4px_0_#1a1008] [image-rendering:pixelated] md:inset-x-auto"
     >
       <ul className="flex items-center justify-between gap-0.5">
         {tabs.map((t) => {
@@ -199,16 +200,15 @@ export function BottomNav({
               <button
                 type="button"
                 onClick={() => onSelect(t.id)}
-                className="relative flex w-[52px] cursor-pointer flex-col items-center px-0.5 py-1 text-[8px] font-[family-name:var(--font-pixel)] text-[#1a1008]"
+                className="relative flex w-[52px] cursor-pointer flex-col items-center px-0.5 py-1 text-[8px] font-[family-name:var(--font-pixel)] text-[#fff8e8]"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selected ? HUD.navFrameSelected : HUD.navFrame}
-                  alt=""
-                  className="mb-0.5 h-10 w-10 object-fill [image-rendering:pixelated]"
-                  draggable={false}
-                />
-                <span className="absolute top-1.5 flex h-7 w-7 items-center justify-center">
+                <span
+                  className={`mb-0.5 flex h-10 w-10 items-center justify-center border-[3px] ${
+                    selected
+                      ? "border-[#3dff7a] bg-[#8f6b3e] shadow-[0_0_0_2px_#1a5c30]"
+                      : "border-[#3a2414] bg-[#c4a06a]"
+                  }`}
+                >
                   <ArtIcon src={t.icon} alt="" className="h-6 w-6" />
                 </span>
                 {t.label}
@@ -221,14 +221,34 @@ export function BottomNav({
   );
 }
 
-export function QuestTicket({ text, progress }: { text: string; progress: string }) {
+export function QuestTicket({
+  text,
+  progress,
+  claimed = false,
+}: {
+  text: string;
+  progress: string;
+  claimed?: boolean;
+}) {
   return (
-    <div className={`${panel} absolute bottom-24 left-3 z-20 max-w-[210px] p-2.5 md:left-4`}>
+    <div
+      className={`${panel} absolute bottom-24 left-3 z-20 max-w-[210px] p-2.5 transition-all duration-300 md:left-4 ${
+        claimed
+          ? "bg-[#ffe08a] ring-2 ring-[#d69a2d] motion-safe:animate-[pf-bob_1.2s_ease-in-out_2]"
+          : ""
+      }`}
+    >
       <div className="flex items-start gap-2">
         <ArtIcon src={HUD.bag} alt="" className="h-7 w-7" />
         <div>
           <p className={`text-[9px] leading-snug ${ink}`}>{text}</p>
-          <p className={`mt-1 text-[10px] tabular-nums text-[#1a5c30]`}>{progress}</p>
+          <p
+            className={`mt-1 text-[10px] tabular-nums ${
+              claimed ? "font-bold text-[#8a5a10]" : "text-[#1a5c30]"
+            }`}
+          >
+            {claimed ? "✓ Claimed" : progress}
+          </p>
         </div>
       </div>
     </div>
@@ -258,7 +278,7 @@ export function ShortcutIcons({
           <ArtIcon src={HUD.silo} alt="" className="h-7 w-7" />
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 border border-[#3a2414] bg-[#ff4d4d]" />
         </span>
-        Premios
+        Rewards
       </button>
       <button type="button" className={item} onClick={onLeaderboard}>
         {/* eslint-disable-next-line @next/next/no-img-element */}

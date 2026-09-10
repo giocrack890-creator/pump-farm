@@ -42,7 +42,7 @@ export default function ProofPage() {
   });
 
   const address =
-    q.data?.address || TREASURY_WALLET || "Treasury1111111111111111111111111111111111";
+    q.data?.address || TREASURY_WALLET || "0x0000000000000000000000000000000000000000";
 
   const txs: TreasuryTx[] = useMemo(() => {
     const raw = (q.data?.transactions ?? []) as Array<{

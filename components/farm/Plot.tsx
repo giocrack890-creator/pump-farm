@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { playHarvestChime, playPlantWhoosh } from "@/components/farm/sounds";
 import { useSoundStore } from "@/store/useSoundStore";
+import { toast } from "@/store/useToastStore";
 
 type Props = {
   plot: ClientPlot;
@@ -87,7 +88,7 @@ export function Plot({ plot, onChanged }: Props) {
       if (!muted) playPlantWhoosh();
       onChanged();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Plant failed");
+      toast.error(e instanceof Error ? e.message : "Plant failed");
     } finally {
       setBusy(false);
     }
@@ -102,7 +103,7 @@ export function Plot({ plot, onChanged }: Props) {
       if (!muted) playHarvestChime();
       onChanged();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Harvest failed");
+      toast.error(e instanceof Error ? e.message : "Harvest failed");
     } finally {
       setBusy(false);
     }

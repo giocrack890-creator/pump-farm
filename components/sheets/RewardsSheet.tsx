@@ -12,7 +12,7 @@ type Props = {
   onClose: () => void;
 };
 
-/** Premios / pozo — layout tipo Fees Pool, estilo Pump Farm. */
+/** Season rewards sheet — pot + stake. */
 export function RewardsSheet({ open, onClose }: Props) {
   const sp = useFarmStore((s) => s.sp);
 
@@ -31,9 +31,9 @@ export function RewardsSheet({ open, onClose }: Props) {
     <HudBottomSheet
       open={open}
       onClose={onClose}
-      title="Pozo de premios"
-      subtitle="Fees de $FARM → Silo → se reparte al cerrar la Season."
-      ariaLabel="Pozo de premios"
+      title="Season Rewards"
+      subtitle="$FARM fees → pot → paid out when the Season closes."
+      ariaLabel="Season rewards"
       maxHeightClass="max-h-[88vh]"
     >
       <div className="space-y-4">

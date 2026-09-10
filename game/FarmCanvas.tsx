@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import type { FarmScene, FarmSceneConfig, ScenePlot } from "./FarmScene";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import type { FarmScene, FarmSceneConfig, ScenePlot, SceneWorker } from "./FarmScene";
+import type { OwnedAnimal } from "@/lib/game/animals";
+import type { SeedTierId } from "@/lib/game/seeds";
 
 type Props = {
   gridSize: number;
@@ -13,19 +15,45 @@ type Props = {
   onExpandTap: () => void;
   onBarnTap: () => void;
   onSiloTap: () => void;
+  onNpcTap?: (npc: "foreman" | "pierre" | "chick") => void;
+  onWorkerHarvest?: (plot: ScenePlot, workerId: string) => void;
+  onWorkerPlant?: (plot: ScenePlot, workerId: string, seedTier: SeedTierId) => void;
   harvestBurstPlotId?: string | null;
+  harvestCombo?: number;
   highlightPlot?: { gridX: number; gridY: number } | null;
   tutorialInstantReadyPlotId?: string | null;
   expandPulse?: number;
   decor?: { id: string; itemId: string; gridX: number; gridY: number }[];
+  workers?: SceneWorker[];
+  animals?: OwnedAnimal[];
+  autoSeedTier?: SeedTierId;
+  hypeBalance?: number;
+  workerUpgradeBonus?: number;
+  onReady?: (handle: FarmCanvasHandle) => void;
 };
 
-export function FarmCanvas(props: Props) {
+export type FarmCanvasHandle = {
+  getPlotScreenPoint: (plotId: string) => { x: number; y: number } | null;
+};
+
+export const FarmCanvas = forwardRef<FarmCanvasHandle, Props>(function FarmCanvas(props, ref) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const sceneRef = useRef<FarmScene | null>(null);
   const propsRef = useRef(props);
   propsRef.current = props;
+
+  useImperativeHandle(ref, () => ({
+    getPlotScreenPoint: (plotId: string) =>
+      sceneRef.current?.getPlotScreenPoint(plotId) ?? null,
+  }));
+
+  useEffect(() => {
+    props.onReady?.({
+      getPlotScreenPoint: (plotId: string) =>
+        sceneRef.current?.getPlotScreenPoint(plotId) ?? null,
+    });
+  }, [props.onReady, props.gridSize]);
 
   useEffect(() => {
     let destroyed = false;
@@ -46,10 +74,18 @@ export function FarmCanvas(props: Props) {
         onExpandTap: () => propsRef.current.onExpandTap(),
         onBarnTap: () => propsRef.current.onBarnTap(),
         onSiloTap: () => propsRef.current.onSiloTap(),
+        onNpcTap: (npc) => propsRef.current.onNpcTap?.(npc),
+        onWorkerHarvest: (p, id) => propsRef.current.onWorkerHarvest?.(p, id),
+        onWorkerPlant: (p, id, tier) => propsRef.current.onWorkerPlant?.(p, id, tier),
         highlightPlot: propsRef.current.highlightPlot,
         tutorialInstantReadyPlotId: propsRef.current.tutorialInstantReadyPlotId,
         expandPulse: propsRef.current.expandPulse,
         decor: propsRef.current.decor,
+        workers: propsRef.current.workers,
+        animals: propsRef.current.animals,
+        autoSeedTier: propsRef.current.autoSeedTier,
+        hypeBalance: propsRef.current.hypeBalance,
+        workerUpgradeBonus: propsRef.current.workerUpgradeBonus,
       };
 
       const scene = new Scene();
@@ -61,13 +97,13 @@ export function FarmCanvas(props: Props) {
         parent: hostRef.current,
         width: w,
         height: h,
-        backgroundColor: "#7bb85c",
+        backgroundColor: "#92c868",
         scene: [scene],
         pixelArt: true,
         antialias: false,
         roundPixels: true,
         scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
-        input: { activePointers: 2 },
+        input: { activePointers: 3 },
         audio: { noAudio: true },
       });
       gameRef.current = game;
@@ -95,8 +131,12 @@ export function FarmCanvas(props: Props) {
   }, [props.highlightPlot]);
 
   useEffect(() => {
-    if (props.harvestBurstPlotId) sceneRef.current?.playHarvestBurst(props.harvestBurstPlotId);
-  }, [props.harvestBurstPlotId]);
+    if (props.harvestBurstPlotId) {
+      sceneRef.current?.playHarvestBurst(props.harvestBurstPlotId, {
+        combo: props.harvestCombo ?? 1,
+      });
+    }
+  }, [props.harvestBurstPlotId, props.harvestCombo]);
 
   useEffect(() => {
     if (props.expandPulse) sceneRef.current?.playExpandReveal();
@@ -110,5 +150,21 @@ export function FarmCanvas(props: Props) {
     sceneRef.current?.syncDecor(props.decor ?? []);
   }, [props.decor]);
 
+  useEffect(() => {
+    sceneRef.current?.syncWorkers(props.workers ?? []);
+  }, [props.workers]);
+
+  useEffect(() => {
+    sceneRef.current?.syncAnimals(props.animals ?? []);
+  }, [props.animals]);
+
+  useEffect(() => {
+    sceneRef.current?.syncAutoFarmEconomy({
+      autoSeedTier: props.autoSeedTier,
+      hypeBalance: props.hypeBalance,
+      workerUpgradeBonus: props.workerUpgradeBonus,
+    });
+  }, [props.autoSeedTier, props.hypeBalance, props.workerUpgradeBonus]);
+
   return <div ref={hostRef} className="absolute inset-0 h-dvh w-screen overflow-hidden" />;
-}
+});

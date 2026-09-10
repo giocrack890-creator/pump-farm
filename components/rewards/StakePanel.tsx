@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { useWalletStore } from "@/store/useWalletStore";
 import { TOKEN_TICKER } from "@/lib/game/config";
@@ -15,7 +14,6 @@ import {
 } from "@/components/hud/hudChrome";
 
 export function StakePanel() {
-  const { isConnected } = useAccount();
   const jwt = useWalletStore((s) => s.jwt);
   const [amount, setAmount] = useState("100");
   const [lockDays, setLockDays] = useState(7);
@@ -28,8 +26,8 @@ export function StakePanel() {
   });
 
   const onStake = async () => {
-    if (!isConnected || !jwt) {
-      setMessage("Connect your Robinhood Chain wallet first.");
+    if (!jwt) {
+      setMessage("Connect your wallet first.");
       return;
     }
     const res = await fetch("/api/stake", {

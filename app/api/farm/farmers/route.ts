@@ -1,12 +1,15 @@
 import { NextRequest } from "next/server";
 import { requireAuth, isAuthError } from "@/lib/auth/verify";
 import {
+  demoBuyWorkerUpgrade,
   demoClaimFarmerIdle,
   demoDeployFarmer,
   demoDismissPendingScout,
   demoHirePendingFarmer,
+  demoHireSpecies,
   demoPromoteFarmer,
   demoScoutFarmer,
+  demoSetAutoSeedTier,
   isDemoDbMode,
 } from "@/lib/demo/farmMemory";
 
@@ -14,12 +17,18 @@ type Body = {
   action?:
     | "scout"
     | "hire"
+    | "hire-species"
     | "dismiss-scout"
     | "deploy"
     | "bench"
     | "promote"
-    | "claim-idle";
+    | "claim-idle"
+    | "buy-upgrade"
+    | "set-auto-seed";
   farmerId?: string;
+  speciesId?: string;
+  upgradeId?: string;
+  seedTier?: string;
 };
 
 /**
@@ -49,6 +58,11 @@ export async function POST(request: NextRequest) {
         return Response.json(demoScoutFarmer());
       case "hire":
         return Response.json(demoHirePendingFarmer());
+      case "hire-species":
+        if (!body.speciesId) {
+          return Response.json({ error: "speciesId required" }, { status: 400 });
+        }
+        return Response.json(demoHireSpecies(body.speciesId));
       case "dismiss-scout":
         return Response.json(demoDismissPendingScout());
       case "deploy":
@@ -62,6 +76,16 @@ export async function POST(request: NextRequest) {
         return Response.json(demoPromoteFarmer(body.farmerId));
       case "claim-idle":
         return Response.json(demoClaimFarmerIdle());
+      case "buy-upgrade":
+        if (!body.upgradeId) {
+          return Response.json({ error: "upgradeId required" }, { status: 400 });
+        }
+        return Response.json(demoBuyWorkerUpgrade(body.upgradeId));
+      case "set-auto-seed":
+        if (!body.seedTier) {
+          return Response.json({ error: "seedTier required" }, { status: 400 });
+        }
+        return Response.json(demoSetAutoSeedTier(body.seedTier));
       default:
         return Response.json({ error: "Unknown action" }, { status: 400 });
     }

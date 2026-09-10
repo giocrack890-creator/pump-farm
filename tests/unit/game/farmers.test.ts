@@ -4,6 +4,7 @@ import {
   computeIdleHype,
   fieldSpotsForLevel,
   hireCost,
+  ownsFarmerSpecies,
   pickScoutSpecies,
   type OwnedFarmer,
 } from "@/lib/game/farmers";
@@ -14,10 +15,10 @@ describe("farmers hire/deploy math", () => {
     expect(hireCost("common", 5)).toBeGreaterThan(hireCost("common", 0));
   });
 
-  it("unlocks field spots with farm level", () => {
-    expect(fieldSpotsForLevel(1)).toBe(3);
-    expect(fieldSpotsForLevel(9)).toBeGreaterThan(3);
-    expect(fieldSpotsForLevel(99)).toBe(8);
+  it("field spots hard-capped at 5", () => {
+    expect(fieldSpotsForLevel(1)).toBe(5);
+    expect(fieldSpotsForLevel(9)).toBe(5);
+    expect(fieldSpotsForLevel(99)).toBe(5);
   });
 
   it("activity scales with deployed income, capped at 4", () => {
@@ -60,5 +61,19 @@ describe("farmers hire/deploy math", () => {
   it("scouts a valid species for level 1", () => {
     const id = pickScoutSpecies(1, () => 0.01);
     expect(id).toBeTruthy();
+  });
+
+  it("tracks one-hire-per-species ownership", () => {
+    const farmers: OwnedFarmer[] = [
+      {
+        id: "1",
+        speciesId: "field_hand",
+        level: 1,
+        deployed: true,
+        hiredAt: new Date().toISOString(),
+      },
+    ];
+    expect(ownsFarmerSpecies(farmers, "field_hand")).toBe(true);
+    expect(ownsFarmerSpecies(farmers, "seed_scout")).toBe(false);
   });
 });

@@ -1,0 +1,460 @@
+/* Pump Farm marketing landing — wood / parchment system */
+
+.pf-landing {
+  --wood-dark: #5b3c23;
+  --wood-mid: #8a5f36;
+  --parchment: #f6ecd4;
+  --cream: #fbf3e0;
+  --gold: #d69a2d;
+  --gold-light: #f0c45a;
+  --nav-cream: #f1e3c4;
+  --green: #5c8a3a;
+  --red: #a8433a;
+  --blue: #4a7fae;
+  --rule: #d9c7a2;
+  --ink: #3a2414;
+  --ink-muted: #6b4a2e;
+  --card: #fff8eb;
+  --shadow: 0 8px 24px rgba(91, 60, 35, 0.12);
+
+  background: var(--cream);
+  color: var(--ink);
+  color-scheme: light;
+  min-height: 100vh;
+  font-family: var(--font-landing-body), system-ui, sans-serif;
+}
+
+.pf-landing * {
+  box-sizing: border-box;
+}
+
+.pf-landing .pf-display {
+  font-family: var(--font-landing-display), var(--font-pixel), monospace;
+  letter-spacing: 0.02em;
+}
+
+.pf-landing .pf-mono {
+  font-family: var(--font-landing-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.pf-landing .pf-card {
+  background: var(--card);
+  border: 2px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.pf-landing .pf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border-radius: 999px;
+  border: 2px solid var(--wood-dark);
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.pf-landing .pf-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.pf-landing .pf-btn-primary {
+  background: var(--green);
+  color: #f7ffef;
+}
+
+.pf-landing .pf-btn-secondary {
+  background: var(--card);
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-landing .pf-btn,
+  .pf-landing .pf-scroll-cue {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@keyframes pf-bounce {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 6px);
+  }
+}
+
+.pf-landing .pf-scroll-cue {
+  animation: pf-bounce 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-landing .pf-scroll-cue {
+    animation: none;
+  }
+}
+
+/* ── Sticky game chrome nav ── */
+
+.pf-landing .pf-nav {
+  background-color: var(--wood-dark);
+  border-bottom: 3px solid var(--wood-mid);
+}
+
+.pf-landing .pf-nav-coin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--wood-dark);
+  border: 2px solid var(--wood-dark);
+  font-family: var(--font-landing-display), var(--font-pixel), monospace;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.pf-landing .pf-nav-link {
+  font-family: var(--font-landing-body), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--nav-cream);
+  transition: color 150ms ease;
+}
+
+.pf-landing .pf-nav-link:hover {
+  color: var(--gold-light);
+}
+
+.pf-landing .pf-nav-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid rgba(241, 227, 196, 0.45);
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--nav-cream);
+  font-family: var(--font-landing-body), system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.pf-landing .pf-nav-social:hover {
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.pf-landing .pf-nav-menu-btn {
+  border: 2px solid rgba(241, 227, 196, 0.55);
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--nav-cream);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.pf-landing .pf-nav-menu-btn:hover {
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+}
+
+.pf-landing .pf-nav-drawer {
+  background: var(--wood-dark);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-landing .pf-nav {
+    transition: none;
+  }
+}
+
+/* ── Below-fold game chrome ── */
+
+.pf-landing .pf-medallion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 30%, #c9a46a 0%, #8a5f36 55%, #5b3c23 100%);
+  border: 3px solid var(--wood-dark);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 235, 0.35),
+    inset 0 -2px 0 rgba(26, 16, 8, 0.25),
+    0 0 0 2px #a67c45,
+    2px 3px 0 rgba(58, 36, 20, 0.35);
+}
+
+.pf-landing .pf-seed-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1.5px solid var(--rule);
+  background: linear-gradient(180deg, #fffdf6 0%, var(--parchment) 100%);
+}
+
+.pf-landing .pf-chrome-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 2px solid var(--rule);
+  background: linear-gradient(180deg, #fffdf6 0%, var(--parchment) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.pf-landing .pf-chrome-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 2px solid var(--wood-mid);
+  background:
+    linear-gradient(145deg, #efe0bc 0%, #d9c7a2 100%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 248, 235, 0.5),
+    inset -1px -1px 0 rgba(91, 60, 35, 0.2);
+}
+
+.pf-landing .pf-status-ribbon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 4px;
+  border-radius: 999px;
+  border: 1.5px solid var(--rule);
+  background: rgba(251, 243, 224, 0.95);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.pf-landing .pf-progress {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 2px solid var(--wood-dark);
+  background: #efe0bc;
+  box-shadow:
+    inset 0 2px 3px rgba(91, 60, 35, 0.2),
+    inset 0 -1px 0 rgba(255, 248, 235, 0.35);
+}
+
+.pf-landing .pf-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, #8bb85a 0%, var(--green) 45%, #3d5c28 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: width 0.5s ease;
+}
+
+.pf-landing .pf-split-bar {
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 1px 2px rgba(26, 16, 8, 0.2);
+}
+
+.pf-landing .pf-stat-pill {
+  border-radius: 12px;
+  border: 2px solid var(--rule);
+  background: linear-gradient(180deg, #fffdf6 0%, var(--parchment) 100%);
+  padding: 0.55rem 0.4rem;
+  text-align: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 2px 0 rgba(91, 60, 35, 0.08);
+}
+
+.pf-landing .pf-season-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.pf-landing .pf-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--green);
+  box-shadow: 0 0 0 2px rgba(92, 138, 58, 0.25);
+  animation: pf-pulse 1.6s ease-in-out infinite;
+}
+
+.pf-landing .pf-footer-coin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--gold);
+  border: 2px solid var(--wood-dark);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.pf-landing .pf-ambient {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.28;
+  z-index: 0;
+}
+
+.pf-landing .pf-ambient-a {
+  top: 8%;
+  right: -4px;
+}
+
+.pf-landing .pf-ambient-b {
+  top: 42%;
+  left: -8px;
+}
+
+.pf-landing .pf-ambient-c {
+  bottom: 18%;
+  right: 2%;
+  opacity: 0.22;
+}
+
+.pf-landing .pf-ambient-intro {
+  top: 1.25rem;
+  right: 1.25rem;
+  opacity: 0.32;
+}
+
+@keyframes pf-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-landing .pf-live-dot,
+  .pf-landing .pf-progress-fill {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Hero — full viewport, art never letterboxed/shrunk */
+.pf-landing .pf-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+.pf-landing .pf-hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  /* Fallback tint if image lags */
+  background: #e8782a;
+}
+
+.pf-landing .pf-hero-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.pf-landing .pf-hero-fade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Soft top shade for nav/logo only — wheat stays full-bleed at bottom */
+  background: linear-gradient(
+    180deg,
+    rgba(30, 18, 8, 0.18) 0%,
+    transparent 28%,
+    transparent 100%
+  );
+}
+
+.pf-landing .pf-hero-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  min-height: 100svh;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 56rem;
+  margin-inline: auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: clamp(5.5rem, 14vh, 8rem) 1rem 5.5rem;
+  text-align: center;
+}
+
+.pf-landing .pf-hero-content .pf-hero-cta {
+  margin-top: auto;
+  padding-bottom: 2.5rem;
+}

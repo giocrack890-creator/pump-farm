@@ -1,5 +1,6 @@
 import { isDemoDbMode } from "@/lib/demo/farmMemory";
 import { fetchTreasurySnapshot } from "@/lib/evm/treasury";
+import { ETH_USD_DISPLAY } from "@/lib/game/config";
 
 /**
  * Public landing stats — never throws to the client.
@@ -10,6 +11,9 @@ export async function GET() {
     seedsPlantedToday: 1842,
     siloUsd: 12450,
     activeFarmers: 936,
+    farmersOnline: 936,
+    holders: null as number | null,
+    marketCap: null as number | null,
     seasonEndsIn: { days: 4, hours: 11 },
     mock: true as boolean,
   };
@@ -39,12 +43,15 @@ export async function GET() {
 
     const ms = Math.max(0, season.endsAt.getTime() - now.getTime());
     const eth = Number(treasury.displayBalance ?? treasury.balanceEth ?? 0);
-    const siloUsd = Number.isFinite(eth) ? Math.round(eth * 3200) : seeded.siloUsd;
+    const siloUsd = Number.isFinite(eth) ? Math.round(eth * ETH_USD_DISPLAY) : seeded.siloUsd;
 
     return Response.json({
       seedsPlantedToday: plantedToday || seeded.seedsPlantedToday,
       siloUsd: siloUsd || seeded.siloUsd,
       activeFarmers: wallets || seeded.activeFarmers,
+      farmersOnline: wallets || seeded.activeFarmers,
+      holders: null as number | null,
+      marketCap: null as number | null,
       seasonEndsIn: {
         days: Math.floor(ms / 86400000),
         hours: Math.floor((ms % 86400000) / 3600000),

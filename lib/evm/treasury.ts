@@ -6,7 +6,7 @@ export async function fetchTreasurySnapshot() {
   return {
     address,
     balanceEth: balance,
-    displayBalance: balance ?? Number(process.env.MOCK_TREASURY_ETH ?? process.env.MOCK_TREASURY_SOL ?? "12.45"),
+    displayBalance: balance ?? Number(process.env.MOCK_TREASURY_ETH ?? "12.45"),
     chain: "robinhood",
   };
 }

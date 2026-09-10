@@ -34,54 +34,53 @@ const COPY: Record<
   { title: string; body: string; cta?: string; showInstant?: boolean; spotlight?: string }
 > = {
   welcome: {
-    title: "Bienvenido a Pump Farm",
-    body: "Plantá, cosechá y ganá SP. Al final de la Season, tus SP te dan una parte del pozo de premios.",
-    cta: "Vamos",
+    title: "Welcome to Pump Farm",
+    body: "Plant, harvest, and earn Season Points (SP). When the Season ends, your SP claim a share of the rewards pot.",
+    cta: "Let's go",
   },
   "tap-plot": {
-    title: "Plantá tu primera semilla",
-    body: "Tocá un plot vacío (anillo verde) en tu granja.",
+    title: "Plant your first seed",
+    body: "Tap an empty soil bed (soft glow) inside the fenced field.",
   },
   "pick-seed": {
-    title: "Elegí una semilla",
-    body: "Empezá con Turnip (Basic) — desbloqueada desde el nivel 1.",
+    title: "Pick a seed",
+    body: "Start with Turnip (Basic) — unlocked at Farm Level 1.",
   },
   growth: {
-    title: "Los cultivos crecen en tiempo real",
-    body: "Volvé más tarde — o acelerá este solo para el tutorial.",
-    cta: "Seguir",
+    title: "Crops grow in real time",
+    body: "Come back later — or speed this one up for the tutorial.",
+    cta: "Continue",
     showInstant: true,
   },
   harvest: {
-    title: "¡Cosechá!",
-    body: "Tocá el cultivo listo. Sumás Season Points (SP).",
+    title: "Harvest!",
+    body: "Tap the ready crop. You earn Season Points (SP).",
   },
   xp: {
     title: "Farm Level",
-    body: "Cada cosecha sube tu nivel: mejores semillas, más tierra y mejoras en la granja.",
-    cta: "Entendido",
+    body: "Every harvest raises your level: better seeds, more land, and farm upgrades.",
+    cta: "Got it",
     spotlight: "xp",
   },
   silo: {
-    title: "Premios (el Silo)",
-    body: "El Silo es el pozo de la Season. Más SP = más parte del bote cuando cierra. Abrilo con Premios.",
-    cta: "Ok",
+    title: "Rewards pot",
+    body: "The Season Pot is the prize pool. More SP = a bigger share when the Season closes. Open it from Rewards.",
+    cta: "OK",
     spotlight: "silo",
   },
   nav: {
-    title: "Tus herramientas",
-    body: "Premios · Shop · Hire · Almanac · Decor · Friends — barra de abajo.",
-    cta: "Terminar tutorial",
+    title: "Your tools",
+    body: "Rewards · Shop · Hire · Book · Friends — bottom bar. Hire workers to auto-farm.",
+    cta: "Finish tutorial",
     spotlight: "nav",
   },
   done: {
-    title: "Listo",
-    body: "Podés repetir el tutorial desde el Menú. A cosechar.",
-    cta: "A la granja",
+    title: "You're set",
+    body: "Replay the tutorial anytime from Menu. Go harvest.",
+    cta: "To the farm",
   },
 };
 
-/** Screen-space spotlight holes for HUD chrome steps. */
 function Spotlight({ kind }: { kind?: string }) {
   if (!kind) return null;
   const box =
@@ -102,50 +101,65 @@ function Spotlight({ kind }: { kind?: string }) {
 }
 
 export function TutorialOverlay({ open, step, onSkip, onNext, onInstantGrow }: Props) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted || !open) return null;
-
   const copy = COPY[step];
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(false);
+    const t = setTimeout(() => setReady(true), 200);
+    return () => clearTimeout(t);
+  }, [step]);
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="pointer-events-none fixed inset-0 z-[60]"
-      >
-        <div className="absolute inset-0 bg-black/50" />
-        <Spotlight kind={copy.spotlight} />
-        <div className="pointer-events-auto absolute inset-x-4 bottom-28 mx-auto max-w-md md:bottom-32">
-          <div className={`p-4 ${hudPanel}`}>
-            <div className="mb-2 flex items-start justify-between gap-2">
-              <p className={`text-[11px] ${hudInk}`}>{copy.title}</p>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/45 p-3 pb-24 sm:items-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <Spotlight kind={copy.spotlight} />
+          <motion.div
+            className={`relative z-[62] w-full max-w-md origin-center p-4 ${hudPanel}`}
+            initial={{ y: 24, opacity: 0, scale: 0.92 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 16, opacity: 0, scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 380, damping: 26 }}
+          >
+            {step === "welcome" && (
+              <div className="mb-3 flex justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/assets/sprites/companions/farmer.png"
+                  alt=""
+                  className="h-16 w-16 object-contain motion-safe:animate-[pf-bob_2.4s_ease-in-out_infinite] [image-rendering:pixelated]"
+                  draggable={false}
+                />
+              </div>
+            )}
+            <p className={`text-[13px] ${hudInk}`}>{copy.title}</p>
+            <p className={`mt-2 text-sm leading-relaxed ${hudInkMuted}`}>{copy.body}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {copy.showInstant && (
+                <button type="button" className={hudBtnSecondary} onClick={onInstantGrow}>
+                  Instant grow
+                </button>
+              )}
               <button
                 type="button"
-                onClick={onSkip}
-                className={`cursor-pointer text-[10px] font-semibold underline ${hudInkMuted}`}
+                className={hudBtnPrimary}
+                disabled={!ready}
+                onClick={onNext}
               >
-                Skip
+                {copy.cta ?? "Next"}
+              </button>
+              <button type="button" className={`text-[10px] underline ${hudInkMuted}`} onClick={onSkip}>
+                Skip tutorial
               </button>
             </div>
-            <p className={`text-sm leading-relaxed ${hudInkMuted}`}>{copy.body}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {copy.showInstant && (
-                <button type="button" onClick={onInstantGrow} className={hudBtnPrimary}>
-                  Instant-grow (tutorial only)
-                </button>
-              )}
-              {copy.cta && (
-                <button type="button" onClick={onNext} className={hudBtnSecondary}>
-                  {copy.cta}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }

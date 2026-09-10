@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /**
- * Shorten a Solana (or similar) address for UI display.
- * Supports truncateAddress(addr, 4) or truncateAddress(addr, 4, 4).
+ * Shorten an EVM address for UI display (`0x1234…abcd`).
+ * Supports truncateAddress(addr, 4) or truncateAddress(addr, 6, 4).
  */
 export function truncateAddress(
   addr: string,
@@ -15,7 +15,9 @@ export function truncateAddress(
   end?: number,
 ): string {
   if (!addr) return "";
-  const start = startOrChars;
+  const start = addr.startsWith("0x") || addr.startsWith("0X")
+    ? Math.max(startOrChars + 2, 6)
+    : startOrChars;
   const tail = end ?? startOrChars;
   if (addr.length <= start + tail) return addr;
   return `${addr.slice(0, start)}…${addr.slice(-tail)}`;

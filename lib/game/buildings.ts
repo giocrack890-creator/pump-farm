@@ -9,10 +9,10 @@ export const BARN_TIERS: Record<
   3: { label: "Ticker Tower", spCost: 800, unlockLevel: 20, harvestBonus: 0.15, hypeBonus: 0.1 },
 };
 
-/** Map real treasury ETH to silo visual tier. */
-export function siloTierFromBalance(eth: number): BuildingTier {
-  if (eth >= 50) return 3;
-  if (eth >= 10) return 2;
+/** Map treasury ETH balance to silo visual tier. */
+export function siloTierFromBalance(sol: number): BuildingTier {
+  if (sol >= 50) return 3;
+  if (sol >= 10) return 2;
   return 1;
 }
 
