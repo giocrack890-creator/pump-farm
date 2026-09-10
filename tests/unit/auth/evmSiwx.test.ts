@@ -36,6 +36,8 @@ describe("EVM SIWX helpers (Robinhood Chain)", () => {
   });
 
   it("allows production, localhost, and pump-farm Vercel hosts", () => {
+    expect(isAllowedSiwxHost("www.pumpfarm.net")).toBe(true);
+    expect(isAllowedSiwxHost("pumpfarm.net")).toBe(true);
     expect(isAllowedSiwxHost("pump-farm.vercel.app")).toBe(true);
     expect(isAllowedSiwxHost("localhost:3000")).toBe(true);
     expect(isAllowedSiwxHost("127.0.0.1")).toBe(true);
@@ -44,7 +46,7 @@ describe("EVM SIWX helpers (Robinhood Chain)", () => {
   });
 
   it("resolves SIWE domain from Origin header", () => {
-    const req = new Request("https://pump-farm.vercel.app/api/auth/siwx/message", {
+    const req = new Request("https://www.pumpfarm.net/api/auth/siwx/message", {
       headers: { origin: "http://localhost:3000" },
     });
     expect(resolveSiwxDomainUri(req)).toEqual({
@@ -53,8 +55,18 @@ describe("EVM SIWX helpers (Robinhood Chain)", () => {
     });
   });
 
+  it("resolves custom production domain from Origin", () => {
+    const req = new Request("https://www.pumpfarm.net/api/auth/siwx/message", {
+      headers: { origin: "https://www.pumpfarm.net" },
+    });
+    expect(resolveSiwxDomainUri(req)).toEqual({
+      domain: "www.pumpfarm.net",
+      uri: "https://www.pumpfarm.net",
+    });
+  });
+
   it("falls back to production domain when Origin is missing", () => {
-    const req = new Request("https://pump-farm.vercel.app/api/auth/siwx/message");
+    const req = new Request("https://www.pumpfarm.net/api/auth/siwx/message");
     expect(resolveSiwxDomainUri(req)).toEqual({
       domain: SIWX_DOMAIN,
       uri: `https://${SIWX_DOMAIN}`,

@@ -1,10 +1,17 @@
 import { getAddress, type Address } from "viem";
 
 /** Canonical production host — used when Origin is missing or not allowed. */
-export const SIWX_DOMAIN = "pump-farm.vercel.app";
-export const SIWX_URI = "https://pump-farm.vercel.app";
+export const SIWX_DOMAIN = "www.pumpfarm.net";
+export const SIWX_URI = "https://www.pumpfarm.net";
 export const SIWX_STATEMENT =
   "Sign in to Pump Farm with your Robinhood Chain wallet.";
+
+/** Explicit production hosts (custom domain + legacy Vercel alias). */
+const SIWX_PRODUCTION_HOSTS = new Set([
+  "www.pumpfarm.net",
+  "pumpfarm.net",
+  "pump-farm.vercel.app",
+]);
 
 /** EIP-55 checksum for SIWE messages — Phantom / WalletKit reject lowercase. */
 export function checksumEvmAddress(value: string): Address {
@@ -28,7 +35,7 @@ export function siwxNumericChainId(chainId: string | number): string {
 export function isAllowedSiwxHost(host: string): boolean {
   const h = host.trim().toLowerCase();
   if (!h) return false;
-  if (h === SIWX_DOMAIN) return true;
+  if (SIWX_PRODUCTION_HOSTS.has(h)) return true;
   if (h === "localhost" || h.startsWith("localhost:")) return true;
   if (h === "127.0.0.1" || h.startsWith("127.0.0.1:")) return true;
   // Vercel previews for this project

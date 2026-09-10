@@ -10,7 +10,7 @@ export const REOWN_PROJECT_ID =
 
 /** AppKit metadata — prefer live origin so WC/Phantom origin checks align with SIWX. */
 export function getAppMetadata() {
-  const fallback = "https://pump-farm.vercel.app";
+  const fallback = "https://www.pumpfarm.net";
   const origin =
     typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
@@ -30,10 +30,10 @@ export function getAppMetadata() {
 export const APP_METADATA = {
   name: "Pump Farm",
   description: "Farm $FARM on Robinhood Chain — grow green candles.",
-  url: "https://pump-farm.vercel.app",
+  url: "https://www.pumpfarm.net",
   icons: [
-    "https://pump-farm.vercel.app/icon.png",
-    "https://pump-farm.vercel.app/assets/landing/logo-pump-farm.png",
+    "https://www.pumpfarm.net/icon.png",
+    "https://www.pumpfarm.net/assets/landing/logo-pump-farm.png",
   ],
 };
 
