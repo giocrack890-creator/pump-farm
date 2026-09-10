@@ -22,8 +22,10 @@ export function NavBar() {
   const muted = useSoundStore((s) => s.muted);
   const toggleMuted = useSoundStore((s) => s.toggleMuted);
 
-  // Landing and play use their own chrome
-  if (pathname === "/" || pathname.startsWith("/play")) return null;
+  // Landing, play, and whitepaper use their own chrome
+  if (pathname === "/" || pathname.startsWith("/play") || pathname.startsWith("/docs")) {
+    return null;
+  }
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center px-3 pt-4">
