@@ -84,6 +84,7 @@ const FarmCanvas = dynamic(
 export default function PlayPage() {
   const router = useRouter();
   const jwt = useWalletStore((s) => s.jwt);
+  const hasHydrated = useWalletStore((s) => s.hasHydrated);
   const syncFromServer = useFarmStore((s) => s.syncFromServer);
   const plots = useFarmStore((s) => s.plots);
   const hype = useFarmStore((s) => s.hype);
@@ -110,6 +111,8 @@ export default function PlayPage() {
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  /** Once true, keep the Phaser farm mounted even if a poll fails. */
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [plantPlot, setPlantPlot] = useState<ScenePlot | null>(null);
   const [nav, setNav] = useState("shop");
   const [panel, setPanel] = useState<
@@ -198,7 +201,7 @@ export default function PlayPage() {
   const refresh = useCallback(async (opts?: { skipHydrate?: boolean }) => {
     if (!jwt) {
       setLoading(false);
-      setLoadError(true);
+      if (!hasLoadedOnce) setLoadError(true);
       return;
     }
     try {
@@ -213,7 +216,8 @@ export default function PlayPage() {
         headers: { Authorization: `Bearer ${jwt}` },
       });
       if (!res.ok) {
-        setLoadError(true);
+        // Soft-fail after first load — never unmount Phaser for a flaky poll.
+        if (!hasLoadedOnce) setLoadError(true);
         return;
       }
       const data = await res.json();
@@ -266,13 +270,14 @@ export default function PlayPage() {
       } else if (done && !tutorialReplay) {
         setTutorialStep(null);
       }
+      setHasLoadedOnce(true);
       setLoadError(false);
     } catch {
-      setLoadError(true);
+      if (!hasLoadedOnce) setLoadError(true);
     } finally {
       setLoading(false);
     }
-  }, [jwt, syncFromServer, setSeason, setXp, tutorialReplay]);
+  }, [jwt, syncFromServer, setSeason, setXp, tutorialReplay, hasLoadedOnce]);
 
   useEffect(() => {
     void refresh();
@@ -632,13 +637,25 @@ export default function PlayPage() {
     if (i >= 0 && i < order.length - 1) setTutorialStep(order[i + 1]!);
   };
 
-  if (!jwt || loadError) {
+  // Wait for localStorage auth before deciding "no session" (avoids gate flash).
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-dvh items-center justify-center bg-[#92c868] text-[#1a1008]/70">
+        Loading farm…
+      </div>
+    );
+  }
+
+  // Only kick to gate when there is truly no session, or the first load failed.
+  // Mid-session poll/SIWX blips must not unmount the farm.
+  if ((!jwt && !hasLoadedOnce) || (loadError && !hasLoadedOnce)) {
     return (
       <FarmEnterGate
         loadError={loadError}
         onClearSession={() => {
           useWalletStore.getState().clearAuth();
           setLoadError(false);
+          setHasLoadedOnce(false);
         }}
       />
     );

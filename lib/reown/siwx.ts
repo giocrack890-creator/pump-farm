@@ -100,22 +100,30 @@ export const pumpFarmSIWX: SIWXConfig = {
       address,
       chainId: String(chainId),
     });
-    const res = await fetch(`/api/auth/siwx/sessions?${qs}`, {
-      headers: { Authorization: `Bearer ${jwt}` },
-    });
-    if (!res.ok) {
+    let res: Response;
+    try {
+      res = await fetch(`/api/auth/siwx/sessions?${qs}`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+    } catch {
+      // Network blip — keep JWT so /play does not unmount the farm.
+      return [];
+    }
+    // Only drop the session on definitive auth failure — never on 5xx / timeouts.
+    if (res.status === 401 || res.status === 403) {
       useWalletStore.getState().clearAuth();
       return [];
     }
+    if (!res.ok) return [];
     const data = (await res.json()) as { sessions?: SIWXSession[] };
     return data.sessions ?? [];
   },
 
   setSessions: async (sessions: SIWXSession[]): Promise<void> => {
-    if (sessions.length === 0) {
-      useWalletStore.getState().clearAuth();
-      return;
-    }
+    // AppKit often calls setSessions([]) during reconnect / chain sync.
+    // Clearing JWT here unmounted the whole Phaser farm for ~10s.
+    // Explicit logout goes through revokeSession / WalletButton.clearAuth.
+    if (sessions.length === 0) return;
     for (const session of sessions) {
       await pumpFarmSIWX.addSession(session);
     }
