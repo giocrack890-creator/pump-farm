@@ -58,6 +58,21 @@ export function soilCells(): { gridX: number; gridY: number }[] {
   return SOIL_CELLS.map((c) => ({ ...c }));
 }
 
+/** Map plot slot index → world soil tile (starter 3×3, then extras spill past). */
+export function soilCellForPlotIndex(index: number): { gridX: number; gridY: number } {
+  const cells = SOIL_CELLS;
+  if (index >= 0 && index < cells.length) return { ...cells[index]! };
+  // Expanded land: continue east/south of the starter field in row-major order.
+  const originX = cells[0]!.gridX;
+  const originY = cells[0]!.gridY;
+  const cols = 3;
+  const local = index;
+  return {
+    gridX: originX + (local % cols),
+    gridY: originY + Math.floor(local / cols),
+  };
+}
+
 export function mapPixelSize() {
   return { width: MAP_WIDTH * TILE_SIZE, height: MAP_HEIGHT * TILE_SIZE };
 }

@@ -4,6 +4,7 @@ import {
   farmCenterPixel,
   mapPixelSize,
   soilCells,
+  soilCellForPlotIndex,
   SHOW_BUILDINGS,
   SHOW_FARMHOUSE,
   FARMHOUSE_POS,
@@ -1530,11 +1531,19 @@ export class FarmScene extends Phaser.Scene {
     this.plotHits.clear();
 
     const now = Date.now();
+    const soils = soilCells();
     const byCell = new Map(plots.map((p) => [`${p.gridX},${p.gridY}`, p]));
+    // Fallback: if coords missed soil tiles (legacy 0-based indices), map by plot.index order.
+    const ordered = [...plots].sort((a, b) => a.index - b.index);
+    const slots = Math.max(soils.length, ordered.length);
 
-    for (const cell of soilCells()) {
-      const plot = byCell.get(`${cell.gridX},${cell.gridY}`);
+    for (let i = 0; i < slots; i++) {
+      const cell = soils[i] ?? soilCellForPlotIndex(i);
+      const plot = byCell.get(`${cell.gridX},${cell.gridY}`) ?? ordered[i];
       if (!plot) continue;
+      // Keep scene plot coords on the world soil tile (taps / highlights).
+      plot.gridX = cell.gridX;
+      plot.gridY = cell.gridY;
       const stage = growthStage(plot, now);
       const { x, y } = gridToScreen(cell.gridX, cell.gridY);
 

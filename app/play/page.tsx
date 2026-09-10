@@ -48,6 +48,7 @@ import type { SeedTierId } from "@/lib/game/seeds";
 import { coverageUpgradeBonus } from "@/lib/game/autoHarvest";
 import type { CompanionId } from "@/lib/game/companions";
 import type { ScenePlot } from "@/game/FarmScene";
+import { soilCellForPlotIndex } from "@/game/farmLayout";
 import { hydrateDemoFromLocal, writeDemoSaveLocal } from "@/lib/demo/clientSave";
 import { utcDayKey } from "@/lib/game/hype";
 
@@ -146,17 +147,26 @@ export default function PlayPage() {
 
   const scenePlots: ScenePlot[] = useMemo(
     () =>
-      plots.map((p, i) => ({
-        id: p.id,
-        index: p.index,
-        gridX: p.gridX ?? i % gridSize,
-        gridY: p.gridY ?? Math.floor(i / gridSize),
-        seedTier: p.seedTier,
-        plantedAt: p.plantedAt,
-        maturesAt: p.maturesAt,
-        status: p.status,
-      })),
-    [plots, gridSize],
+      plots.map((p, i) => {
+        const idx = typeof p.index === "number" ? p.index : i;
+        const cell = soilCellForPlotIndex(idx);
+        // DB plots have no grid coords — never use 0..gridSize local indices (soil is world tiles).
+        const hasWorldCell =
+          typeof p.gridX === "number" &&
+          typeof p.gridY === "number" &&
+          (p.gridX >= 16 || p.gridY >= 12);
+        return {
+          id: p.id,
+          index: idx,
+          gridX: hasWorldCell ? p.gridX! : cell.gridX,
+          gridY: hasWorldCell ? p.gridY! : cell.gridY,
+          seedTier: p.seedTier,
+          plantedAt: p.plantedAt,
+          maturesAt: p.maturesAt,
+          status: p.status,
+        };
+      }),
+    [plots],
   );
 
   const tutorialActive = tutorialStep != null && tutorialStep !== "done";
