@@ -24,6 +24,8 @@ import {
   type FarmersPanelState,
 } from "@/components/sheets/HireFarmersSheet";
 import { DecorSheet } from "@/components/sheets/DecorSheet";
+import { RewardsSheet } from "@/components/sheets/RewardsSheet";
+import { RanksSheet } from "@/components/sheets/RanksSheet";
 import type { DecorPlacement } from "@/lib/game/decor";
 import type { DecorItemId } from "@/lib/game/decor";
 import { DevBypassButton } from "@/components/layout/DevBypassButton";
@@ -78,7 +80,7 @@ export default function PlayPage() {
   const [plantPlot, setPlantPlot] = useState<ScenePlot | null>(null);
   const [nav, setNav] = useState("shop");
   const [panel, setPanel] = useState<
-    "almanac" | "companion" | "expand" | "farmers" | "decor" | null
+    "almanac" | "companion" | "expand" | "farmers" | "decor" | "rewards" | "ranks" | null
   >(null);
   const [farmers, setFarmers] = useState<FarmersPanelState | null>(null);
   const [decor, setDecor] = useState<DecorPlacement[]>([]);
@@ -422,7 +424,10 @@ export default function PlayPage() {
           onBarnTap={() =>
             setSheetMsg(`Exchange look tracks Farm Level (visual L${level}).`)
           }
-          onSiloTap={() => router.push("/rewards")}
+          onSiloTap={() => {
+            if (tutorialStep === "silo") setTutorialStep("nav");
+            setPanel("rewards");
+          }}
           harvestBurstPlotId={burstId}
           highlightPlot={highlightPlot}
           tutorialInstantReadyPlotId={instantReadyId}
@@ -451,9 +456,9 @@ export default function PlayPage() {
       <ShortcutIcons
         onRewards={() => {
           if (tutorialStep === "silo") setTutorialStep("nav");
-          router.push("/rewards");
+          setPanel("rewards");
         }}
-        onLeaderboard={() => router.push("/leaderboard")}
+        onLeaderboard={() => setPanel("ranks")}
       />
       <QuestTicket
         text="Harvest 3 crops today"
@@ -463,8 +468,10 @@ export default function PlayPage() {
         active={nav}
         onSelect={(id) => {
           setNav(id);
-          if (id === "silo") router.push("/rewards");
-          else if (id === "almanac") setPanel("almanac");
+          if (id === "silo") {
+            if (tutorialStep === "silo") setTutorialStep("nav");
+            setPanel("rewards");
+          } else if (id === "almanac") setPanel("almanac");
           else if (id === "farmers") setPanel("farmers");
           else if (id === "decorate") setPanel("decor");
           else if (id === "friends") {
@@ -551,6 +558,8 @@ export default function PlayPage() {
           })();
         }}
       />
+      <RewardsSheet open={panel === "rewards"} onClose={() => setPanel(null)} />
+      <RanksSheet open={panel === "ranks"} onClose={() => setPanel(null)} />
 
       {levelUp != null && (
         <LevelUpOverlay level={levelUp} onDone={() => setLevelUp(null)} />

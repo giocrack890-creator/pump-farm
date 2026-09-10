@@ -218,7 +218,7 @@ export function ShortcutIcons({
 }) {
   const item = `${panel} flex w-14 cursor-pointer flex-col items-center gap-1 p-1.5 text-[8px] ${ink} hover:brightness-110`;
   return (
-    <div className="absolute right-3 top-36 z-20 flex flex-col gap-2 md:right-4">
+    <div className="absolute right-3 top-[9.5rem] z-20 flex flex-col gap-2 md:right-4">
       <button type="button" className={item} onClick={onRewards}>
         <span className="relative">
           <ArtIcon src="/assets/icons/rewards.png" alt="" className="h-7 w-7" />
