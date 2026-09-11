@@ -23,7 +23,7 @@ import type {
 } from "./types";
 
 /**
- * Pump Farm ops.
+ * Hood Harvest ops.
  *
  * Deliberately plain next to the game: this is a tool, and the numbers on it
  * decide what real money goes where. Everything it shows is measured — a figure
@@ -77,7 +77,7 @@ export function AdminPanel() {
     <div className="min-h-dvh bg-[#0b0c0d] text-[#e9e6df]">
       <header className="sticky top-0 z-10 flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-white/10 bg-[#0b0c0d]/95 px-4 py-3 backdrop-blur">
         <h1 className="text-sm font-semibold tracking-wide">
-          Pump Farm <span className="text-[#7bd88f]">ops</span>
+          Hood Harvest <span className="text-[#7bd88f]">ops</span>
         </h1>
         <nav className="flex gap-1">
           {(["live", "config", "payouts", "season"] as const).map((id) => (
@@ -168,7 +168,7 @@ function Gate({
         }}
         className="grid w-full max-w-sm gap-3 rounded-2xl border border-white/10 bg-[#131416] p-6"
       >
-        <h2 className="text-base font-semibold">Pump Farm ops</h2>
+        <h2 className="text-base font-semibold">Hood Harvest ops</h2>
         <p className="text-[12px] leading-relaxed text-[#9a978f]">
           Paste the ops token, or sign in on the site first with a wallet in the
           admin allowlist and reload this page.
@@ -317,7 +317,7 @@ const CONFIG_FIELDS: {
     label: "Token contract",
     hint: "The Pons launch whose fees are the pot. Changing this repoints the whole game.",
   },
-  { key: "tokenTicker", label: "Ticker", hint: "Shown in the UI, e.g. FARM." },
+  { key: "tokenTicker", label: "Ticker", hint: "Shown in the UI, e.g. HOOD." },
   {
     key: "creatorAddress",
     label: "Fee recipient override",

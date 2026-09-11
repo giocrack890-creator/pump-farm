@@ -34,7 +34,7 @@ export function useAppConfig() {
   return {
     config: query.data ?? null,
     tokenAddress: query.data?.tokenAddress ?? null,
-    ticker: query.data?.tokenTicker ?? "FARM",
+    ticker: query.data?.tokenTicker ?? "HOOD",
     tokenLive: Boolean(query.data?.tokenLive),
     explorer: query.data?.explorer ?? null,
   };

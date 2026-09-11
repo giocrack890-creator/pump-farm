@@ -46,7 +46,10 @@ const dryRun = flags.has("--dry-run");
 const listOnly = flags.has("--list");
 const yesToAll = flags.has("--yes-to-all");
 
-const SERVER = process.env.PUMPFARM_SERVER_URL ?? "http://127.0.0.1:3000";
+const SERVER =
+  process.env.HOODHARVEST_SERVER_URL ??
+  process.env.PUMPFARM_SERVER_URL ??
+  "http://127.0.0.1:3000";
 const TOKEN = process.env.ADMIN_TOKEN?.trim();
 /** A bug should not be able to drain the wallet in one run. */
 const MAX_ETH = Number(process.env.PAYOUT_MAX_ETH ?? 1);

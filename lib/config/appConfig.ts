@@ -7,7 +7,7 @@ import { isDemoDbMode } from "@/lib/demo/farmMemory";
  *
  * The token address is the reason this exists. It used to be
  * `NEXT_PUBLIC_TOKEN_MINT`, which Next inlines into the bundle at build time —
- * so repointing the game at the real $FARM launch meant a redeploy, and the
+ * so repointing the game at the real $HOOD launch meant a redeploy, and the
  * server and the browser could disagree in between. Here it is one row an
  * operator edits from /admin, and both sides read the same answer.
  *
@@ -46,7 +46,7 @@ export type AppConfigValues = {
 
 const ENV_DEFAULTS: Record<ConfigKey, () => string | null> = {
   tokenAddress: () => sanitizeAddress(process.env.NEXT_PUBLIC_TOKEN_MINT),
-  tokenTicker: () => process.env.NEXT_PUBLIC_TOKEN_TICKER?.trim() || "FARM",
+  tokenTicker: () => process.env.NEXT_PUBLIC_TOKEN_TICKER?.trim() || "HOOD",
   creatorAddress: () => sanitizeAddress(process.env.PONS_CREATOR_ADDRESS),
   treasuryAddress: () =>
     sanitizeAddress(
@@ -106,7 +106,7 @@ function buildValues(rows: Map<string, string>): AppConfigValues {
 
   return {
     tokenAddress: sanitizeAddress(get("tokenAddress")),
-    tokenTicker: get("tokenTicker") || "FARM",
+    tokenTicker: get("tokenTicker") || "HOOD",
     creatorAddress: sanitizeAddress(get("creatorAddress")),
     treasuryAddress: sanitizeAddress(get("treasuryAddress")),
     stakeEscrowAddress: sanitizeAddress(get("stakeEscrowAddress")),

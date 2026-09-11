@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AdminPanel } from "./AdminPanel";
 
 export const metadata: Metadata = {
-  title: "Pump Farm · ops",
+  title: "Hood Harvest · ops",
   robots: { index: false, follow: false },
 };
 
