@@ -47,7 +47,7 @@ type PriceApi = {
   fetchedAt: string;
 };
 
-const SPARK_KEY = "pf_live_spark_v1";
+const SPARK_KEY = "pf_live_mcap_spark_v1";
 const SPARK_MAX = 36;
 
 function readSpark(): number[] {
@@ -70,15 +70,10 @@ function writeSpark(pts: number[]) {
   }
 }
 
-/** Literal USD market cap → millions style ($1.2M / $12M), never unit price. */
-function formatMarketCap(n: number | null | undefined): string {
+/** Full USD market cap for the hero — e.g. $55,083,380 (literal). */
+function formatMarketCapHero(n: number | null | undefined): string {
   if (n == null || !Number.isFinite(n) || n <= 0) return "—";
-  if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(2)}B`;
-  if (n >= 10_000_000) return `$${(n / 1_000_000).toFixed(0)}M`;
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  // Sub-$1M caps still expressed in millions (e.g. $0.85M)
-  if (n >= 1_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  return "—";
+  return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
 function formatPrice(n: number): string {
@@ -111,7 +106,7 @@ function LiveChart({ series }: { series: number[] }) {
   const up = series[series.length - 1]! >= series[0]!;
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" role="img" aria-label="Live price chart">
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" role="img" aria-label="Live market cap chart">
       <path
         d={d}
         fill="none"
@@ -166,17 +161,24 @@ export function LandingSidebar() {
   });
 
   useEffect(() => {
-    const px = priceQ.data?.priceUsd;
-    if (!primed.current || !px || priceQ.data?.source !== "dexscreener") return;
+    const cap = priceQ.data?.marketCap;
+    if (
+      !primed.current ||
+      cap == null ||
+      !Number.isFinite(cap) ||
+      cap <= 0 ||
+      priceQ.data?.source !== "dexscreener"
+    ) {
+      return;
+    }
     setSpark((prev) => {
       const last = prev[prev.length - 1];
-      // Skip near-identical ticks to keep the spark readable
-      if (last != null && Math.abs(last - px) / last < 0.00005) return prev;
-      const next = [...prev, px].slice(-SPARK_MAX);
+      if (last != null && Math.abs(last - cap) / last < 0.00005) return prev;
+      const next = [...prev, cap].slice(-SPARK_MAX);
       writeSpark(next);
       return next;
     });
-  }, [priceQ.data?.priceUsd, priceQ.data?.source, priceQ.dataUpdatedAt]);
+  }, [priceQ.data?.marketCap, priceQ.data?.source, priceQ.dataUpdatedAt]);
 
   const silo = seasonQ.data;
   const split = silo?.payoutSplit ?? [
@@ -185,15 +187,14 @@ export function LandingSidebar() {
     { id: "rest", label: "Active rest", share: PAYOUT_TIER_3_SHARE },
   ];
 
-  const live = priceQ.data?.source === "dexscreener" && (priceQ.data.priceUsd ?? 0) > 0;
+  const live =
+    priceQ.data?.source === "dexscreener" &&
+    ((priceQ.data.marketCap ?? 0) > 0 || (priceQ.data.priceUsd ?? 0) > 0);
   const price = live ? priceQ.data!.priceUsd : null;
   const change24 = live ? priceQ.data!.priceChange24h : null;
-  // Literal market cap (USD total), never token unit price
-  const mcap = live
+  const mcapUsd = live
     ? (priceQ.data!.marketCap ?? statsQ.data?.marketCap ?? null)
     : null;
-  const mcapUsd =
-    mcap != null && Number.isFinite(mcap) && mcap > 1 ? mcap : null;
   const feedSymbol = live
     ? (priceQ.data!.symbol ?? statsQ.data?.feedSymbol ?? "TOKEN")
     : null;
@@ -209,9 +210,9 @@ export function LandingSidebar() {
 
   const chartSeries = useMemo(() => {
     if (spark.length >= 2) return spark;
-    if (price != null) return [price * 0.998, price];
+    if (mcapUsd != null) return [mcapUsd * 0.998, mcapUsd];
     return [];
-  }, [spark, price]);
+  }, [spark, mcapUsd]);
 
   const copyMint = async () => {
     if (!mintLive) return;
@@ -225,15 +226,17 @@ export function LandingSidebar() {
 
   return (
     <aside className="flex flex-col gap-3">
-      {/* Price — live Dexscreener when configured */}
+      {/* Market cap — live Dexscreener when configured */}
       <div className="pf-card p-4">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">
-              {live && feedSymbol ? `$${feedSymbol} price` : `$${TOKEN_TICKER} price`}
+              {live && feedSymbol
+                ? `$${feedSymbol} market cap`
+                : `$${TOKEN_TICKER} market cap`}
             </p>
-            <p className="pf-mono mt-1 text-2xl font-bold text-[var(--ink)]">
-              {live && price != null ? formatPrice(price) : "—"}
+            <p className="pf-mono mt-1 text-2xl font-bold tabular-nums text-[var(--ink)]">
+              {live && mcapUsd != null ? formatMarketCapHero(mcapUsd) : "—"}
             </p>
             {changeLabel ? (
               <p
@@ -243,6 +246,11 @@ export function LandingSidebar() {
               >
                 {changeLabel}{" "}
                 <span className="font-semibold text-[var(--ink-muted)]">24h</span>
+              </p>
+            ) : null}
+            {live && price != null ? (
+              <p className="mt-1 text-[11px] text-[var(--ink-muted)]">
+                Price {formatPrice(price)}
               </p>
             ) : null}
           </div>
@@ -262,9 +270,9 @@ export function LandingSidebar() {
         <p className="mt-2 text-[10px] leading-snug text-[var(--ink-muted)]">
           {live
             ? isProxy
-              ? `Live Dexscreener feed for $${feedSymbol} on Robinhood Chain — plumbing test until $${TOKEN_TICKER} launches. Not $${TOKEN_TICKER} price.`
-              : `Live Dexscreener quote · refreshes ~15s.`
-            : `Sample chart — live feed connects at launch. Not a live quote.`}
+              ? `Live Dexscreener market cap for $${feedSymbol} on Robinhood Chain — plumbing test until $${TOKEN_TICKER} launches. Not $${TOKEN_TICKER} mcap.`
+              : `Live Dexscreener market cap · refreshes ~15s.`
+            : `Sample chart — live market cap connects at launch.`}
         </p>
         {pairUrl ? (
           <a
@@ -400,11 +408,11 @@ export function LandingSidebar() {
           icon="animal_farmer"
         />
         <StatPill
-          label="Mkt cap"
-          value={formatMarketCap(mcapUsd)}
+          label="Price"
+          value={live && price != null ? formatPrice(price) : "—"}
           hint={live ? (isProxy ? `$${feedSymbol} live` : "Live") : "At launch"}
           icon="coin_farm"
-          live={live && mcapUsd != null}
+          live={live && price != null}
         />
         <StatPill
           label="Farmers"
