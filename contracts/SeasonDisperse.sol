@@ -6,7 +6,7 @@ pragma solidity ^0.8.24;
  * Prefer an existing audited disperse if one is already on-chain;
  * otherwise audit this (or a hardened fork) before mainnet use.
  *
- * Ops wallet must hold ETH for gas + the payout asset (ETH or $FARM ERC-20).
+ * Ops wallet must hold ETH for gas + the payout asset (ETH or $HOOD ERC-20).
  * Keep dry-run / idempotency in the off-chain scheduler — this contract only
  * executes a single batched transfer call.
  */
@@ -34,7 +34,7 @@ contract SeasonDisperse {
         emit Dispersed(address(0), recipients.length, total);
     }
 
-    /// @notice Disperse an ERC-20 (e.g. $FARM) — caller must approve this contract first.
+    /// @notice Disperse an ERC-20 (e.g. $HOOD) — caller must approve this contract first.
     function disperseToken(address token, address[] calldata recipients, uint256[] calldata values)
         external
     {

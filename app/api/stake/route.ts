@@ -31,7 +31,7 @@ type StakeBody = {
 };
 
 /**
- * Record a stake after the player has transferred the token to the escrow.
+ * Record a stake after the player has transferred $HOOD to the escrow.
  *
  * The transfer is verified on chain before anything is written. It used to be
  * taken on trust — the route only checked the hash was not a duplicate — which

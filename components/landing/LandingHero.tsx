@@ -35,8 +35,8 @@ function HeroSvgFallback() {
 function LogoSvgFallback() {
   return (
     <div className="pf-display text-center text-[clamp(2.5rem,10vw,4.5rem)] leading-[0.95] text-[#c99645] [text-shadow:3px_3px_0_#3a2414]">
-      <div>PUMP</div>
-      <div>FARM</div>
+      <div>HOOD</div>
+      <div>HARVEST</div>
     </div>
   );
 }
@@ -73,7 +73,7 @@ export function LandingHero({
           {logoSrc ? (
             <Image
               src={logoSrc}
-              alt="Pump Farm"
+              alt="Hood Harvest"
               width={640}
               height={512}
               priority

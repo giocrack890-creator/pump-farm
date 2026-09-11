@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Pump Farm — social poster exporter
+ * Hood Harvest — social poster exporter
  *
  * Composes 1080×1080 and 1080×1350 PNGs from REAL in-repo sprites
  * (VectoRaith farming pack, farmer sheets, HUD icons, wood-plank logo)
@@ -65,7 +65,7 @@ async function main() {
       "All characters/crops/buildings are real sprites from public/assets/sprites",
       "Pixel-art scaled with sharp kernel:nearest at integer factors only",
       "coin_farm / rank_* from kit drawers matching PixelIcon.tsx",
-      "Wood-plank logo = assets/landing/logo-pump-farm.png (landing hero asset)",
+      "Wood-plank logo = assets/landing/logo-hood-harvest.png (landing hero asset)",
       "Pot headline number from live treasury only — never invented demo figures",
     ],
   };

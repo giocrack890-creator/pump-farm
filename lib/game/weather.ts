@@ -3,7 +3,7 @@ import {
   WEATHER_STORM_FRACTION,
 } from "@/lib/game/config"
 
-/** Atmospheric farm state driven by real $FARM price action. */
+/** Atmospheric farm state driven by real $HOOD price action. */
 export type WeatherState = "Sunny" | "Storming" | "RainbowBullSky"
 
 /**

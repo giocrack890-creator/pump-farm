@@ -1,4 +1,4 @@
-/** Hired Farmers — adapted from Hooders idle hire/deploy loop for Pump Farm. */
+/** Hired Farmers — adapted from Hooders idle hire/deploy loop for Hood Harvest. */
 
 export type FarmerRarity = "common" | "rare" | "epic" | "legendary";
 
@@ -205,7 +205,7 @@ export function deployedIncomePerSec(farmers: OwnedFarmer[]): number {
   return farmers.filter((f) => f.deployed).reduce((a, f) => a + farmerHypePerSec(f), 0);
 }
 
-/** Activity 1–4× — Hooders Closing Bell analogue for Pump Farm harvest share flavor. */
+/** Activity 1–4× — Hooders Closing Bell analogue for Hood Harvest harvest share flavor. */
 export function activityMultiplier(farmers: OwnedFarmer[]): number {
   const rate = deployedIncomePerSec(farmers);
   if (rate <= 0) return 1;

@@ -9,7 +9,7 @@ import {
 } from "@/lib/game/config"
 
 /**
- * Soft-capped Hype-rate bonus from $FARM balance:
+ * Soft-capped Hype-rate bonus from $HOOD balance:
  * `min(sqrt(balance) * k, cap)`.
  */
 export function holdingBonus(

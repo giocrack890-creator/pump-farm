@@ -2,7 +2,7 @@ import Link from "next/link";
 import { TOKEN_TICKER } from "@/lib/game/config";
 import { Separator } from "@/components/ui/separator";
 
-export const DISCLAIMER = `Pump Farm is an entertainment product tied to $${TOKEN_TICKER}, a memecoin with no intrinsic value or expectation of financial return. The game and token target Robinhood Chain (EVM); Season Point rewards follow published on-chain rules and are not guaranteed. Deployment on Robinhood Chain does not mean $${TOKEN_TICKER} is listed or buyable inside the Robinhood brokerage app. Play responsibly.`;
+export const DISCLAIMER = `Hood Harvest is an entertainment product tied to $${TOKEN_TICKER}, a memecoin with no intrinsic value or expectation of financial return. The game and token target Robinhood Chain (EVM); Season Point rewards follow published on-chain rules and are not guaranteed. Deployment on Robinhood Chain does not mean $${TOKEN_TICKER} is listed or buyable inside the Robinhood brokerage app. Play responsibly.`;
 
 const SOCIALS = [
   { href: "https://x.com/PumpFarmer", label: "X" },
@@ -14,7 +14,7 @@ export function Footer() {
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="font-[family-name:var(--font-display)] text-lg text-[#3DFF7A]">
-            Pump Farm
+            Hood Harvest
           </p>
           <div className="flex flex-wrap items-center gap-3 text-sm text-white/60">
             {SOCIALS.map((s) => (

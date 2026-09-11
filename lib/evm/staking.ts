@@ -1,6 +1,6 @@
 /**
  * TODO: replace with audited on-chain staking program before mainnet.
- * v1 uses an escrow-tracked commitment: client transfers $FARM (ERC-20) to
+ * v1 uses an escrow-tracked commitment: client transfers $HOOD (ERC-20) to
  * ESCROW_WALLET on Robinhood Chain, then POSTs the tx hash for multipliers.
  */
 

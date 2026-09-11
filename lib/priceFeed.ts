@@ -5,7 +5,7 @@ import { getPotSnapshot } from "@/lib/pot/snapshot";
  * Golden Harvest, and the market card.
  *
  * This used to be a Dexscreener call pointed at a stand-in token (a MEME pair
- * hardcoded as a "proxy feed") so the plumbing could be tested before $FARM
+ * hardcoded as a "proxy feed") so the plumbing could be tested before $HOOD
  * existed. That stand-in is gone: the price now comes from the same on-chain
  * snapshot the pot does, so the number driving Golden Harvest is the number the
  * pot is denominated in, and there is no way for the two to describe different

@@ -42,7 +42,7 @@ export const usePlayerStore = create<PlayerState>()(
         set({ questHarvestToday: get().questHarvestToday + 1 }),
       setCompanionId: (companionId) => set({ companionId }),
     }),
-    { name: "pump-farm-player" },
+    { name: "hood-harvest-player" },
   ),
 );
 

@@ -1,5 +1,5 @@
 /**
- * Named game / payout constants for Pump Farm.
+ * Named game / payout constants for Hood Harvest.
  * Money-adjacent splits live here so nothing is hardcoded inline.
  */
 
@@ -121,7 +121,7 @@ export const PAYOUT_AMOUNT_DECIMALS = 18
  * constant cannot be changed without a redeploy, which is the whole reason the
  * runtime config exists.
  */
-export const TOKEN_TICKER = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "FARM"
+export const TOKEN_TICKER = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "HOOD"
 
 /** Fallback Silo fill target (ETH) for the % full bar; overridden in /admin. */
 export const SILO_TARGET_ETH = (() => {
@@ -144,4 +144,6 @@ export const SILO_TARGET_ETH = (() => {
  * Whether the token is live is now answered by the runtime config — a
  * configured address means live. See `useAppConfig()` on the client and
  * `getAppConfig()` on the server; both reject the zero address as unset.
+ *
+ * Being on Robinhood Chain still ≠ listed inside the Robinhood brokerage app.
  */
