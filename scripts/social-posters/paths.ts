@@ -5,7 +5,7 @@ export const PUBLIC = path.join(ROOT, "public");
 export const OUT_DIR = path.join(ROOT, "exports/social-posters");
 
 export const ASSETS = {
-  logo: path.join(PUBLIC, "assets/landing/logo-pump-farm.png"),
+  logo: path.join(PUBLIC, "assets/landing/logo-hood-harvest.png"),
   heroBg: path.join(PUBLIC, "assets/landing/hero-fondo-farm.jpg"),
   farmerWalk: path.join(PUBLIC, "assets/sprites/animals/farmer_walk.png"),
   farmerPlow: path.join(PUBLIC, "assets/sprites/animals/farmer_plow.png"),

@@ -29,7 +29,7 @@ export const useWalletStore = create<WalletState>()(
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
-      name: "pump-farm-auth",
+      name: "hood-harvest-auth",
       partialize: (s) => ({
         address: s.address,
         jwt: s.jwt,

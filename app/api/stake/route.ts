@@ -11,7 +11,7 @@ type StakeBody = {
 };
 
 /**
- * Records a stake after the client has transferred $FARM to the escrow vault.
+ * Records a stake after the client has transferred $HOOD to the escrow vault.
  *
  * TODO: replace escrow bookkeeping with an audited on-chain staking program
  * before mainnet. Do not store or use private keys here — the client signs the

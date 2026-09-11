@@ -43,5 +43,5 @@ export async function verifyAuthToken(token: string): Promise<AuthPayload> {
 }
 
 export function authMessage(nonce: string, timestamp: string): string {
-  return `Pump Farm login\nNonce: ${nonce}\nTimestamp: ${timestamp}`;
+  return `Hood Harvest login\nNonce: ${nonce}\nTimestamp: ${timestamp}`;
 }

@@ -9,7 +9,7 @@ import { useWalletStore } from "@/store/useWalletStore";
 import { useSoundStore } from "@/store/useSoundStore";
 
 const LINKS = [
-  { href: "/play", label: "Farm" },
+  { href: "/play", label: "Play" },
   { href: "/rewards", label: "Silo" },
   { href: "/leaderboard", label: "Ranks" },
   { href: "/proof", label: "Proof" },
@@ -35,7 +35,7 @@ export function NavBar() {
             href="/"
             className="mr-1 rounded-full px-3 py-1.5 font-[family-name:var(--font-display)] text-sm font-semibold text-[#3DFF7A]"
           >
-            Pump Farm
+            Hood Harvest
           </Link>
           {LINKS.map((link) => {
             const active = pathname.startsWith(link.href);

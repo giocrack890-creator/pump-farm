@@ -82,11 +82,11 @@ export function WhitepaperPage() {
     >
       <header className="pf-nav sticky top-0 z-50">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
-          <Link href="/" className="flex items-center gap-2" aria-label="Pump Farm home">
+          <Link href="/" className="flex items-center gap-2" aria-label="Hood Harvest home">
             <span className="pf-nav-coin" aria-hidden>
               $
             </span>
-            <span className="pf-display text-[13px] text-[var(--nav-cream)]">PUMP FARM</span>
+            <span className="pf-display text-[13px] text-[var(--nav-cream)]">HOOD HARVEST</span>
           </Link>
           <nav className="hidden items-center gap-4 sm:flex" aria-label="Docs">
             <Link href="/play" className="pf-nav-link">
@@ -133,13 +133,13 @@ export function WhitepaperPage() {
         <article className="pf-wp-paper space-y-12 md:space-y-16">
           <header className="space-y-3 border-b-2 border-[var(--rule)] pb-8">
             <p className="pf-display text-[11px] text-[var(--wood-mid)]">
-              PUMP FARM · SEASON RULES
+              HOOD HARVEST · SEASON RULES
             </p>
             <h1 className="pf-display text-[clamp(1.4rem,3.5vw,2rem)] leading-snug text-[var(--ink)]">
-              Grow green candles. Share the Silo.
+              Harvest green candles. Share the Silo.
             </h1>
             <p className="max-w-2xl text-[15px] leading-relaxed text-[var(--ink-muted)]">
-              Pump Farm is a browser farm wrapped around real ${TOKEN_TICKER} trading
+              Hood Harvest is a browser farm wrapped around real ${TOKEN_TICKER} trading
               fees. You plant, harvest Season Points, and compete for a weekly pool —
               not for purchased SP.
             </p>
@@ -148,7 +148,7 @@ export function WhitepaperPage() {
           <section id="vision" className="pf-wp-section scroll-mt-28">
             <h2 className="pf-wp-h">01 · Vision</h2>
             <p>
-              Most memecoins ask you to hold and hope. Pump Farm asks you to{" "}
+              Most memecoins ask you to hold and hope. Hood Harvest asks you to{" "}
               <strong>farm</strong>: a Stardew-style loop where skill, streak, and
               season rank decide how much of the fee Silo you share.
             </p>

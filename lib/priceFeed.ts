@@ -1,6 +1,6 @@
 /**
  * Dexscreener price feed for landing / Golden Harvest.
- * Until $FARM launches we can point DEXSCREENER_* at a live proxy pair
+ * Until $HOOD launches we can point DEXSCREENER_* at a live proxy pair
  * (e.g. MEME on Robinhood Chain) to verify the plumbing.
  */
 
@@ -17,7 +17,7 @@ export type PriceSnapshot = {
   name: string | null;
   pairId: string | null;
   pairUrl?: string;
-  /** True when feed is a stand-in token, not $FARM yet. */
+  /** True when feed is a stand-in token, not $HOOD yet. */
   proxy: boolean;
   source: "dexscreener" | "mock";
   fetchedAt: string;
@@ -32,8 +32,8 @@ const MOCK_PRICE = 0.00042;
 
 /**
  * Temporary live plumbing stand-in: MEME on Robinhood Chain (Dexscreener).
- * Used only when DEXSCREENER_* is unset and $FARM is not live yet.
- * Override anytime via env; set NEXT_PUBLIC_PRICE_PROXY=false when $FARM pair is real.
+ * Used only when DEXSCREENER_* is unset and $HOOD is not live yet.
+ * Override anytime via env; set NEXT_PUBLIC_PRICE_PROXY=false when $HOOD pair is real.
  */
 const DEFAULT_PROXY_FEED = {
   chain: "robinhood",

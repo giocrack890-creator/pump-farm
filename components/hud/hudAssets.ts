@@ -1,4 +1,4 @@
-/** Paths for Pump Farm HUD/UI asset pack (sliced from sheet). */
+/** Paths for Hood Harvest HUD/UI asset pack (sliced from sheet). */
 
 export const HUD = {
   panel: "/assets/sprites/ui/hud/panel_master.png",

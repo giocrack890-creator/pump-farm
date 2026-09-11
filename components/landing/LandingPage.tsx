@@ -124,7 +124,7 @@ export function LandingPage({
             Farm green candles. Cash Season Points into the Silo.
           </h2>
           <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-[var(--ink-muted)]">
-            Pump Farm is a cozy on-chain farming game. You plant, harvest, and earn Season Points
+            Hood Harvest is a cozy on-chain farming game. You plant, harvest, and earn Season Points
             (SP). A cut of every ${TOKEN_TICKER} trade fee fills the Silo — and when the Season
             closes, that pot pays out by rank. No SP for sale. No hidden treasury theater.
           </p>
@@ -148,7 +148,7 @@ export function LandingPage({
               <span className="pf-footer-coin" aria-hidden>
                 <PixelIcon id="coin_farm" size={18} />
               </span>
-              <p className="pf-display text-sm text-[var(--wood-dark)]">PUMP FARM</p>
+              <p className="pf-display text-sm text-[var(--wood-dark)]">HOOD HARVEST</p>
             </div>
             <div className="flex flex-wrap gap-3 text-sm font-semibold text-[var(--ink-muted)]">
               <Link href="/docs" className="hover:text-[var(--ink)]">

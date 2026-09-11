@@ -87,7 +87,7 @@ const ROADMAP: {
   {
     phase: "Season 1",
     title: "Token launch",
-    items: ["$FARM ERC-20 + CA", "DEX chart wired", "First on-chain payout"],
+    items: ["$HOOD ERC-20 + CA", "DEX chart wired", "First on-chain payout"],
     icon: "coin_farm",
     status: "status_clock",
     statusLabel: "Soon",

@@ -12,7 +12,7 @@ export default function HomePage() {
     publicAsset("assets/landing/hero-fondo-farm.jpg") ??
     publicAsset("assets/landing/hero-background.jpg") ??
     publicAsset("assets/landing/hero-background.png");
-  const logoSrc = publicAsset("assets/landing/logo-pump-farm.png");
+  const logoSrc = publicAsset("assets/landing/logo-hood-harvest.png");
 
   return <LandingPage heroSrc={heroSrc} logoSrc={logoSrc} />;
 }

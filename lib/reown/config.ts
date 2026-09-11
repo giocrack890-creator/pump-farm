@@ -16,24 +16,24 @@ export function getAppMetadata() {
       ? window.location.origin
       : process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || fallback;
   return {
-    name: "Pump Farm",
-    description: "Farm $FARM on Robinhood Chain — grow green candles.",
+    name: "Hood Harvest",
+    description: "Hood Harvest on Robinhood Chain — grow green candles, share the Silo.",
     url: origin,
     icons: [
       `${origin}/icon.png`,
-      `${origin}/assets/landing/logo-pump-farm.png`,
+      `${origin}/assets/landing/logo-hood-harvest.png`,
     ],
   };
 }
 
 /** @deprecated use getAppMetadata() — kept for any static imports */
 export const APP_METADATA = {
-  name: "Pump Farm",
-  description: "Farm $FARM on Robinhood Chain — grow green candles.",
+  name: "Hood Harvest",
+  description: "Hood Harvest on Robinhood Chain — grow green candles, share the Silo.",
   url: "https://www.pumpfarm.net",
   icons: [
     "https://www.pumpfarm.net/icon.png",
-    "https://www.pumpfarm.net/assets/landing/logo-pump-farm.png",
+    "https://www.pumpfarm.net/assets/landing/logo-hood-harvest.png",
   ],
 };
 

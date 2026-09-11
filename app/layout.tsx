@@ -23,14 +23,14 @@ const pixel = Press_Start_2P({
   weight: ["400"],
 });
 
-const ticker = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "FARM";
+const ticker = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "HOOD";
 
 export const metadata: Metadata = {
-  title: "Pump Farm — Grow Green Candles. Literally.",
-  description: `A gamified Robinhood Chain farm where harvests earn Season Points and real $${ticker} fee rewards.`,
+  title: "Hood Harvest — Harvest the Hood. Literally.",
+  description: `A gamified Robinhood Chain harvest game where seasons earn Points and real $${ticker} fee rewards.`,
   openGraph: {
-    title: "Pump Farm",
-    description: "Grow green candles. Earn Season Points. Share the Silo.",
+    title: "Hood Harvest",
+    description: "Harvest green candles. Earn Season Points. Share the Silo.",
     type: "website",
   },
 };

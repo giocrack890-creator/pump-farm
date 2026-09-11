@@ -34,7 +34,7 @@ const COPY: Record<
   { title: string; body: string; cta?: string; showInstant?: boolean; spotlight?: string }
 > = {
   welcome: {
-    title: "Welcome to Pump Farm",
+    title: "Welcome to Hood Harvest",
     body: "Plant, harvest, and earn Season Points (SP). When the Season ends, your SP claim a share of the rewards pot.",
     cta: "Let's go",
   },

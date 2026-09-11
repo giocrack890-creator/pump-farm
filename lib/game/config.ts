@@ -1,5 +1,5 @@
 /**
- * Named game / payout constants for Pump Farm.
+ * Named game / payout constants for Hood Harvest.
  * Money-adjacent splits live here so nothing is hardcoded inline.
  */
 
@@ -108,7 +108,7 @@ export const WEATHER_STORM_FRACTION = -0.05
 /** Decimal places used when splitting token amounts (ERC-20 default = 18). */
 export const PAYOUT_AMOUNT_DECIMALS = 18
 
-export const TOKEN_TICKER = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "FARM"
+export const TOKEN_TICKER = process.env.NEXT_PUBLIC_TOKEN_TICKER ?? "HOOD"
 /** ERC-20 contract address on Robinhood Chain (0x…). Placeholder until deploy + audit. */
 export const TOKEN_MINT =
   process.env.NEXT_PUBLIC_TOKEN_MINT ??
@@ -147,7 +147,7 @@ export const ETH_USD_DISPLAY = (() => {
 export const SOL_USD_DISPLAY = ETH_USD_DISPLAY
 
 /**
- * Only treat $FARM ERC-20 as live when explicitly configured (not a zero/placeholder).
+ * Only treat $HOOD ERC-20 as live when explicitly configured (not a zero/placeholder).
  * Landing CA card shows "not live yet" until this is true.
  * Being on Robinhood Chain ≠ listed inside the Robinhood brokerage app.
  */

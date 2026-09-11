@@ -15,16 +15,8 @@ const LINKS = [
 ] as const;
 
 const SOCIALS = [
-  { href: "https://x.com/PumpFarmer", label: "X", aria: "Pump Farm on X" },
+  { href: "https://x.com/PumpFarmer", label: "X", aria: "Hood Harvest on X" },
 ] as const;
-
-function CoinBadge() {
-  return (
-    <span className="pf-nav-coin" aria-hidden>
-      $
-    </span>
-  );
-}
 
 export function LandingNav() {
   const [open, setOpen] = useState(false);
@@ -41,10 +33,17 @@ export function LandingNav() {
   return (
     <header className="pf-nav sticky top-0 z-50">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="Pump Farm home">
-          <CoinBadge />
-          <span className="pf-display text-[14px] leading-none text-[var(--nav-cream)]">
-            PUMP FARM
+        <Link href="/" className="flex items-center gap-2.5" aria-label="Hood Harvest home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/landing/logo-hood-harvest.png"
+            alt=""
+            className="h-9 w-auto object-contain drop-shadow-[0_2px_0_#1a1008]"
+            width={120}
+            height={48}
+          />
+          <span className="pf-display hidden text-[13px] leading-none text-[var(--nav-cream)] sm:inline">
+            HOOD HARVEST
           </span>
         </Link>
 

@@ -99,7 +99,7 @@ export async function composeHero(W: number, H: number): Promise<Buffer> {
   }
 
   const plaque = await woodPlaque({
-    text: "FARM $FARM EVERY MINUTE.",
+    text: "FARM $HOOD EVERY MINUTE.",
     width: Math.round(W * 0.86),
     height: portrait ? 84 : 74,
     fontSize: portrait ? 26 : 24,

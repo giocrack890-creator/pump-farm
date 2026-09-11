@@ -55,7 +55,7 @@ export const useSoundStore = create<SoundState>()(
       musicVolume: 0.35,
     }),
     {
-      name: "pump-farm-sound",
+      name: "hood-harvest-sound",
       partialize: (s) => ({ muted: s.muted }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;

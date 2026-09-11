@@ -75,7 +75,7 @@ export function FeesPoolPanel({
           <p className={`text-[12px] ${hudInk}`}>Season rewards pot</p>
         </div>
         <p className={`text-[12px] leading-snug ${hudInkMuted}`}>
-          A cut of every <strong className={hudInk}>$FARM</strong> trade feeds this pot. You farm,
+          A cut of every <strong className={hudInk}>$HOOD</strong> trade feeds this pot. You farm,
           earn <strong className={hudInk}>SP</strong>, and when the Season closes you get a share by
           rank. $ amounts below are what each tier pays <em>right now</em> — not the token price.
         </p>

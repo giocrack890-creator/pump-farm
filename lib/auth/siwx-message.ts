@@ -4,7 +4,7 @@ import { getAddress, type Address } from "viem";
 export const SIWX_DOMAIN = "www.pumpfarm.net";
 export const SIWX_URI = "https://www.pumpfarm.net";
 export const SIWX_STATEMENT =
-  "Sign in to Pump Farm with your Robinhood Chain wallet.";
+  "Sign in to Hood Harvest with your Robinhood Chain wallet.";
 
 /** Explicit production hosts (custom domain + legacy Vercel alias). */
 const SIWX_PRODUCTION_HOSTS = new Set([

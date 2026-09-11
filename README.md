@@ -1,6 +1,6 @@
-# Pump Farm
+# Hood Harvest
 
-Gamified Robinhood Chain memecoin farm for **$FARM** (`pump.farm`). Players plant Pump Seeds, harvest Season Points, and compete for a weekly Silo payout funded by real trading fees.
+Gamified Robinhood Chain memecoin harvest for **$HOOD**. Players plant seeds, harvest Season Points, and compete for a weekly Silo payout funded by real trading fees.
 
 ## Stack
 

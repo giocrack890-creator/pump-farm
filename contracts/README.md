@@ -1,4 +1,4 @@
-# Pump Farm — on-chain contracts (Robinhood Chain)
+# Hood Harvest — on-chain contracts (Robinhood Chain)
 
 **Chain ID:** `4663`  
 **RPC:** `https://rpc.mainnet.chain.robinhood.com`  
@@ -10,7 +10,7 @@
 
 | File | Purpose |
 |------|---------|
-| `FarmToken.sol` | OpenZeppelin ERC-20 `$FARM` |
+| `FarmToken.sol` | OpenZeppelin ERC-20 `$HOOD` |
 | `SeasonDisperse.sol` | Batched multi-send for Season / Harvest Round payouts |
 
 ## Hard gates before mainnet funds
@@ -19,7 +19,7 @@
 2. **Verify** source on Blockscout after deploy.
 3. Ops wallet holds **ETH for gas** (not SOL). Keep blast-radius containment (minimally funded ops key).
 4. Off-chain payout scheduler keeps **Decimal math, dry-run, idempotency, feature-flag off by default** — only the on-chain execution path changes.
-5. Do **not** market “buy $FARM in the Robinhood brokerage app” unless that separate listing exists.
+5. Do **not** market “buy $HOOD in the Robinhood brokerage app” unless that separate listing exists.
 
 ## Env after deploy
 

@@ -5,7 +5,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * $FARM — ERC-20 on Robinhood Chain (chain ID 4663).
+ * $HOOD — ERC-20 on Robinhood Chain (chain ID 4663).
  *
  * AUDIT REQUIRED before mainnet deployment with real user funds.
  * Deploy + verify source on https://explorer.mainnet.chain.robinhood.com
@@ -14,7 +14,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  */
 contract FarmToken is ERC20, Ownable {
     constructor(address initialOwner, uint256 initialSupply)
-        ERC20("Pump Farm", "FARM")
+        ERC20("Hood Harvest", "HOOD")
         Ownable(initialOwner)
     {
         _mint(initialOwner, initialSupply);

@@ -16,7 +16,7 @@ import {
 const features = [
   {
     title: "Plant seeds",
-    body: "Drop Pump Seeds into living plots and start a real-time growth loop.",
+    body: "Drop seeds into living plots and start a real-time growth loop.",
     art: "/assets/sprites/crops/basic_1.png",
   },
   {
@@ -55,7 +55,7 @@ const faqs = [
   },
   {
     q: "Do I need to know crypto to play?",
-    a: "You need an EVM wallet on Robinhood Chain (MetaMask, Robinhood Wallet, or WalletConnect) and enough ETH for gas when claiming on-chain rewards. The farm loop itself is a normal plant → grow → harvest game. Deploying on Robinhood Chain does not mean $FARM is buyable inside the Robinhood brokerage app.",
+    a: "You need an EVM wallet on Robinhood Chain (MetaMask, Robinhood Wallet, or WalletConnect) and enough ETH for gas when claiming on-chain rewards. The farm loop itself is a normal plant → grow → harvest game. Deploying on Robinhood Chain does not mean $HOOD is buyable inside the Robinhood brokerage app.",
   },
   {
     q: "Can I buy Season Points?",
@@ -784,9 +784,9 @@ function LandingFooter() {
     <footer className="landing-gradient-deep border-t border-white/10 text-[#f5f0ff]">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-[1.2fr_1fr_1fr]">
         <div>
-          <p className="font-[family-name:var(--font-display)] text-2xl font-bold">Pump Farm</p>
+          <p className="font-[family-name:var(--font-display)] text-2xl font-bold">Hood Harvest</p>
           <p className="mt-2 max-w-xs text-sm text-[#c4b5fd]/70">
-            Grow green candles. Literally. A cozy on-chain farm with real fee-sharing seasons.
+            Harvest green candles. Literally. A cozy on-chain farm with real fee-sharing seasons.
           </p>
           <div className="mt-4">
             <CopyCA dark />
@@ -839,7 +839,7 @@ function LandingFooter() {
         </div>
       </div>
       <p className="border-t border-white/10 px-4 py-4 text-center text-[10px] leading-relaxed text-white/30">
-        Pump Farm is entertainment software. Token rewards depend on protocol fees and eligibility
+        Hood Harvest is entertainment software. Token rewards depend on protocol fees and eligibility
         rules. Not financial advice.
       </p>
     </footer>

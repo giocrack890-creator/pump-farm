@@ -32,7 +32,7 @@ export function RewardsSheet({ open, onClose }: Props) {
       open={open}
       onClose={onClose}
       title="Season Rewards"
-      subtitle="$FARM fees → pot → paid out when the Season closes."
+      subtitle="$HOOD fees → pot → paid out when the Season closes."
       ariaLabel="Season rewards"
       maxHeightClass="max-h-[88vh]"
     >
