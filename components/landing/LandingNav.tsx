@@ -36,7 +36,7 @@ export function LandingNav() {
         <Link href="/" className="flex items-center gap-2.5" aria-label="Hood Harvest home">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/assets/landing/logo-hood-harvest.png"
+            src="/assets/landing/logo-hood-harvest.png?v=2"
             alt=""
             className="h-9 w-auto object-contain drop-shadow-[0_2px_0_#1a1008]"
             width={120}
