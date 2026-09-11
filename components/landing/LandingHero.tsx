@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { TOKEN_TICKER } from "@/lib/game/config";
@@ -69,15 +68,18 @@ export function LandingHero({
       </div>
 
       <div className="pf-hero-content">
-        <div className="w-full max-w-[min(92vw,480px)] drop-shadow-[0_12px_28px_rgba(0,0,0,0.35)]">
+        <div className="w-full max-w-[min(92vw,480px)]">
           {logoSrc ? (
-            <Image
-              src={logoSrc}
+            // Native <img> keeps PNG alpha; Next/Image can flatten/matte on some deploys.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`${logoSrc}?v=2`}
               alt="Hood Harvest"
               width={640}
-              height={512}
-              priority
-              className="mx-auto h-auto w-full object-contain"
+              height={280}
+              decoding="async"
+              fetchPriority="high"
+              className="mx-auto h-auto w-full object-contain [filter:drop-shadow(0_4px_12px_rgba(0,0,0,0.35))]"
             />
           ) : (
             <LogoSvgFallback />
