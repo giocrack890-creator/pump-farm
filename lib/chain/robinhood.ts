@@ -4,7 +4,7 @@ import { defineChain, fallback, http } from "viem";
  * Robinhood Chain — locked-in facts (do not re-derive):
  * - Mainnet chain ID 4663
  * - RPC https://rpc.mainnet.chain.robinhood.com
- * - Explorer https://explorer.mainnet.chain.robinhood.com (Blockscout)
+ * - Explorer https://robinhoodchain.blockscout.com (Blockscout)
  * - Native gas token: ETH
  */
 
@@ -18,7 +18,7 @@ export const ROBINHOOD_RPC =
 
 export const ROBINHOOD_EXPLORER =
   process.env.NEXT_PUBLIC_EXPLORER_URL ??
-  "https://explorer.mainnet.chain.robinhood.com";
+  "https://robinhoodchain.blockscout.com";
 
 export const robinhoodChain = defineChain({
   id: ROBINHOOD_CHAIN_ID,

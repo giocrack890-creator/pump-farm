@@ -2,7 +2,7 @@
 
 **Chain ID:** `4663`  
 **RPC:** `https://rpc.mainnet.chain.robinhood.com`  
-**Explorer (Blockscout):** `https://explorer.mainnet.chain.robinhood.com`  
+**Explorer (Blockscout):** `https://robinhoodchain.blockscout.com`  
 **Testnet faucet:** `https://faucet.testnet.chain.robinhood.com`  
 **Native gas:** ETH
 

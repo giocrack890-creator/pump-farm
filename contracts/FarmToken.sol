@@ -8,7 +8,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * $HOOD — ERC-20 on Robinhood Chain (chain ID 4663).
  *
  * AUDIT REQUIRED before mainnet deployment with real user funds.
- * Deploy + verify source on https://explorer.mainnet.chain.robinhood.com
+ * Deploy + verify source on https://robinhoodchain.blockscout.com
  * Being on Robinhood Chain does NOT mean the token is listed in the
  * Robinhood brokerage app — that is a separate process.
  */
